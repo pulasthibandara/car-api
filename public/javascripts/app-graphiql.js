@@ -94,8 +94,7 @@ $(function (global) {
                 "# To bring up the auto-complete at any point, just press Ctrl-Space.\n" +
                 "#\n" +
                 "# Press the run button above, or Cmd-Enter to execute the query, and the result\n" +
-                "# will appear in the pane to the right.\n\n" +
-                "query FactionsAndShips {\n  factions(names:[\"empire\",\"rebels\"]) {\n    name\n    ships{\n      edges{\n        node{\n          name\n        }\n      }\n    }\n  }\n}"
+                "# will appear in the pane to the right.\n\n"
             }),
             elem
         );
