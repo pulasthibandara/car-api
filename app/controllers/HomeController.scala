@@ -6,6 +6,7 @@ import scala.util.{Failure, Success}
 import play.api.mvc._
 import play.api.libs.json._
 import models._
+import user.UserRepository
 import sangria.parser.QueryParser
 import sangria.ast.Document
 import sangria.execution._

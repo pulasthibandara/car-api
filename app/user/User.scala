@@ -1,9 +1,9 @@
-package models
+package user
 
 import java.time.Instant
 
-import sangria.macros.derive._
 import sangria.ast
+import sangria.macros.derive._
 import sangria.schema.ScalarType
 import sangria.validation.ValueCoercionViolation
 
@@ -18,7 +18,7 @@ case class User (
   createdAt: Instant = Instant.now
 )
 
-object graphql {
+object User {
   case object DateTimeCoerceViolation extends ValueCoercionViolation("Date value expected")
 
   def parseDateTime(s: String) = Try(Instant.parse(s)) match {
