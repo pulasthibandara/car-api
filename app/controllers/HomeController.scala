@@ -6,7 +6,7 @@ import scala.util.{Failure, Success}
 import play.api.mvc._
 import play.api.libs.json._
 import models._
-import user.UserRepository
+import user.UserDAO
 import sangria.parser.QueryParser
 import sangria.ast.Document
 import sangria.execution._
@@ -19,7 +19,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * application's home page.
  */
 @Singleton
-class HomeController @Inject()(userRepository: UserRepository, cc: ControllerComponents)
+class HomeController @Inject()(userRepository: UserDAO, cc: ControllerComponents)
                               (implicit exec: ExecutionContext) extends AbstractController(cc) {
 
   /**
@@ -47,12 +47,6 @@ class HomeController @Inject()(userRepository: UserRepository, cc: ControllerCom
         executeGraphQL(queryAst, operationName, variables)
       case Failure(error) =>
         Future.successful(Ok("error :("))
-    }
-  }
-
-  def test = Action.async { implicit request =>
-    userRepository.getAll map {
-      users => Ok((users.map { user => user.firstName }).mkString(", "))
     }
   }
 

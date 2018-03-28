@@ -22,7 +22,14 @@ libraryDependencies += "org.sangria-graphql" %% "sangria" % "1.3.3"
 libraryDependencies += "org.sangria-graphql" %% "sangria-relay" % "1.3.3"
 libraryDependencies += "org.sangria-graphql" %% "sangria-play-json" % "1.0.4"
 
+libraryDependencies ++= Seq(
+  "com.mohiva" %% "play-silhouette" % "5.0.0",
+  "com.mohiva" %% "play-silhouette-password-bcrypt" % "5.0.0",
+  "com.mohiva" %% "play-silhouette-crypto-jca" % "5.0.0",
+  "com.mohiva" %% "play-silhouette-persistence" % "5.0.0",
+  "com.mohiva" %% "play-silhouette-testkit" % "5.0.0" % "test"
+)
 
-unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )  
-
+libraryDependencies += "net.codingwell" %% "scala-guice" % "4.1.1"
+libraryDependencies += "com.iheart" %% "ficus" % "1.4.3"
       

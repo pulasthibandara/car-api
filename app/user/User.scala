@@ -1,7 +1,9 @@
 package user
 
 import java.time.Instant
+import java.util.UUID
 
+import com.mohiva.play.silhouette.api.{Identity, LoginInfo}
 import sangria.ast
 import sangria.macros.derive._
 import sangria.schema.ScalarType
@@ -10,13 +12,13 @@ import sangria.validation.ValueCoercionViolation
 import scala.util.{Failure, Success, Try}
 
 case class User (
-  id: String,
+  id: UUID,
   firstName: String,
   lastName: String,
   email: String,
-  password: String,
-  createdAt: Instant = Instant.now
-)
+  loginInfo: Option[LoginInfo] = None,
+  createdAt: Option[Instant] = None
+) extends Identity
 
 object User {
   case object DateTimeCoerceViolation extends ValueCoercionViolation("Date value expected")
@@ -38,5 +40,7 @@ object User {
     }
   )
 
-  val UserType = deriveObjectType[Unit, User]();
+  val UserType = deriveObjectType[Unit, User](
+    ExcludeFields("loginInfo", "id")
+  )
 }
