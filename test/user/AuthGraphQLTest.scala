@@ -7,9 +7,9 @@ import sangria.macros._
 import sangria.marshalling.playJson._
 import sangria.execution._
 import models._
+import common.Concurrent._
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification {
   import user.AuthGraphQL._
@@ -38,9 +38,9 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification {
 
     val userService = inject[UserService]
     val variables: JsValue = Json.toJson(Map("signupData" -> signupData))
-    val result = Await.result(Executor.execute(GraphqlSchema.SchemaDefinition, query, GraphqlContext(userService),
+    val result = Executor.execute(GraphqlSchema.SchemaDefinition, query, GraphqlContext(userService),
       variables = variables
-    ), Duration.Inf)
+    ).await
 
     (result \ "data" \ "signUp" \ "firstName").as[String] must_== "pulasthi"
   }
