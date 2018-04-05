@@ -1,22 +1,42 @@
 package user
 
+import com.google.inject.Singleton
+import models.GraphqlContext
 import play.api.libs.json.Json
-import sangria.macros.derive.{InputObjectTypeName, deriveInputObjectType}
-import sangria.schema.InputObjectType
+import sangria.macros.derive.deriveInputObjectType
+import sangria.schema._
+import sangria.marshalling.playJson._
+import user.User.UserType
 
-case class AuthProviderCredentials(email: String, password: String)
-case class AuthProviderSignupData(credentials: AuthProviderCredentials)
+trait AuthProviderData
+case class AuthProviderCredentials(firstName: String, lastName: String, email: String, password: String)
+  extends AuthProviderData
+case class SignupData(credentials: Option[AuthProviderCredentials])
 
-trait AuthGraphQLImplicits {
+object AuthGraphQL {
   implicit val jsonFormatCredentials = Json.format[AuthProviderCredentials]
+  implicit val jsonFormatSignupData = Json.format[SignupData]
+  implicit val jsonReadSignupData = Json.reads[SignupData]
 
-  implicit val AuthProviderEmailInputType: InputObjectType[AuthProviderCredentials] =
-    deriveInputObjectType[AuthProviderCredentials](
-      InputObjectTypeName("AUTH_PROVIDER_EMAIL")
+  implicit  val AuthProviderCredentialsInputType: InputObjectType[AuthProviderCredentials] =
+    deriveInputObjectType[AuthProviderCredentials]()
+  implicit val SignupDataInputType: InputObjectType[SignupData] =
+    deriveInputObjectType[SignupData]()
+
+  val signUpDataArg = Argument("authProvider", SignupDataInputType)
+
+  def mutations(): List[Field[GraphqlContext, Unit]] = List(
+    Field(
+      "signUp",
+      UserType,
+      arguments = signUpDataArg :: Nil,
+      resolve = c => c.args.arg(signUpDataArg) match {
+        case SignupData(Some(AuthProviderCredentials(firstName, lastName, email, password))) =>
+          c.ctx.userService.signUp(firstName, lastName, email, password)
+      }
     )
+  )
 
-  implicit val jsonFormatSignupData = Json.format[AuthProviderSignupData]
 
-  implicit val AuthProviderSignupDataInputType: InputObjectType[AuthProviderSignupData] =
-    deriveInputObjectType[AuthProviderSignupData]()
+
 }

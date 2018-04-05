@@ -1,36 +1,27 @@
 package models
 
 import sangria.schema._
-import sangria.marshalling.playJson._
 import user._
-import user.User._
 
-case class GraphqlContext (userRepository: UserDAO)
+case class GraphqlContext (userService: UserService)
 
-trait GraphqlSchema extends
-  AuthGraphQLImplicits {
-
-}
-
-object GraphqlSchema extends GraphqlSchema {
-  val NameArg = Argument("name", StringType)
-  val AuthProviderArg = Argument("authProvider", AuthProviderSignupDataInputType)
-
+object GraphqlSchema {
   val QueryType = ObjectType(
     "Query",
     fields[GraphqlContext, Unit](
-//       Field(
-//         "users",
-//         ListType(UserType),
-//        Some("Fetch all users"),
-//        resolve = c => c.ctx.userRepository.getAll
-//       )
+       Field(
+         "test",
+         StringType,
+        Some("Fetch all users"),
+        resolve = c => "test"
+       )
     )
   )
 
   val MutationType = ObjectType(
     "Mutation",
     fields[GraphqlContext, Unit](
+      AuthGraphQL.mutations():_*
 //      Field(
 //        "createUser",
 //        UserType,

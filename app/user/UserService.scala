@@ -30,22 +30,22 @@ class UserService @Inject()(
   /**
     * Sign-up the user if not exists. Otherwise throw an error
     */
-  def signUp(firstName: String, lastName: String, email: String, authProvider: AuthProviderSignupData): Future[User] = {
+  def signUp(firstName: String, lastName: String, email: String, password: String): Future[User] = {
       val userId = UUID.randomUUID()
       val loginInfo = LoginInfo(CredentialsProvider.ID, userId)
       val user = User(userId, firstName, lastName, email, Some(loginInfo))
 
       userDAO.find(email).flatMap {
         case Some(_) => throw new UserAlreadyExists(user.email)
-        case None => createUser(user, authProvider)
+        case None => createUser(user, password)
       }
   }
 
   /**
     * Creates the user and the relevant authInfo
     */
-  private def createUser(user: User, authProvider: AuthProviderSignupData): Future[User] =  {
-    val authInfo = passwordHasherRegistry.current.hash(authProvider.credentials.password)
+  private def createUser(user: User, password: String): Future[User] =  {
+    val authInfo = passwordHasherRegistry.current.hash(password)
 
     for {
       user <- userDAO.save(user)
