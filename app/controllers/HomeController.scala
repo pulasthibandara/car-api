@@ -2,15 +2,19 @@ package controllers
 
 import javax.inject._
 
+import com.mohiva.play.silhouette.api.Silhouette
+import com.mohiva.play.silhouette.api.actions.UserAwareRequest
+
 import scala.util.{Failure, Success}
 import play.api.mvc._
 import play.api.libs.json._
 import models._
-import user.UserService
+import user.{AuthService, DefaultEnv}
 import sangria.parser.QueryParser
 import sangria.ast.Document
 import sangria.execution._
 import sangria.marshalling.playJson._
+import user.AuthGraphQL.SecurityEnforcer
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -19,8 +23,11 @@ import scala.concurrent.{ExecutionContext, Future}
  * application's home page.
  */
 @Singleton
-class HomeController @Inject()(userService: UserService, cc: ControllerComponents)
-                              (implicit exec: ExecutionContext) extends AbstractController(cc) {
+class HomeController @Inject()(
+  userService: AuthService,
+  cc: ControllerComponents,
+  silhouette: Silhouette[DefaultEnv]
+)(implicit exec: ExecutionContext) extends AbstractController(cc) {
 
   /**
    * Create an Action to render an HTML page with a welcome message.
@@ -40,7 +47,7 @@ class HomeController @Inject()(userService: UserService, cc: ControllerComponent
 
   implicit val graphQLRequestReeds: Reads[GraphQLRequest] = Json.using[Json.WithDefaultValues].reads[GraphQLRequest]
 
-  def graphQL = Action.async(parse.json[GraphQLRequest]) { implicit request =>
+  def graphQL = silhouette.UserAwareAction.async(parse.json[GraphQLRequest]) { implicit request =>
     val GraphQLRequest(query, variables, operationName) = request.body
     QueryParser.parse(query) match {
       case Success(queryAst) =>
@@ -50,13 +57,15 @@ class HomeController @Inject()(userService: UserService, cc: ControllerComponent
     }
   }
 
-  private def executeGraphQL(query: Document, operation: Option[String], vars: JsObject) = {
+  private def executeGraphQL(query: Document, operation: Option[String], vars: JsObject)
+    (implicit request: UserAwareRequest[DefaultEnv, GraphQLRequest]) = {
     Executor.execute(
       GraphqlSchema.SchemaDefinition,
       query,
-      GraphqlContext(userService),
+      SecureContext(identity = request.identity, userService),
       variables = vars,
-      operationName = operation
+      operationName = operation,
+      middleware = SecurityEnforcer :: Nil
     ).map(Ok(_))
       .recover {
         case error: QueryAnalysisError ⇒ BadRequest(error.resolveError)

@@ -3,24 +3,25 @@ package models
 import sangria.schema._
 import user._
 
-case class GraphqlContext (userService: UserService)
+case class SecureContext(identity: Option[User], authService: AuthService)
 
 object GraphqlSchema {
   val QueryType = ObjectType(
     "Query",
-    fields[GraphqlContext, Unit](
-       Field(
-         "test",
-         StringType,
+    fields[SecureContext, Unit](
+      Field(
+        "test",
+        StringType,
         Some("Fetch all users"),
+        tags = AuthGraphQL.Authorized :: Nil,
         resolve = c => "test"
-       )
+      )
     )
   )
 
   val MutationType = ObjectType(
     "Mutation",
-    fields[GraphqlContext, Unit](
+    fields[SecureContext, Unit](
       AuthGraphQL.mutations():_*
 //      Field(
 //        "createUser",
