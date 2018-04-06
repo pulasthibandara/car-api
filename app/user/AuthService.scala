@@ -5,6 +5,7 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.{LoginInfo, Silhouette}
 import com.mohiva.play.silhouette.api.util.{Credentials, PasswordHasherRegistry}
+import com.mohiva.play.silhouette.impl.exceptions.IdentityNotFoundException
 import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
 import common.UUIDImplitits
 
@@ -57,6 +58,7 @@ class AuthService @Inject()(
       token <- user match {
         case Some(_) => silhouette.env.authenticatorService.create(loginInfo)(null)
           .flatMap(silhouette.env.authenticatorService.init(_)(null))
+        case None => throw new IdentityNotFoundException("User not found.")
       }
     } yield token
   }

@@ -38,6 +38,7 @@ object AuthGraphQL {
       resolve = c => c.args.arg(signUpDataArg) match {
         case SignupData(Some(AuthProviderCredentials(firstName, lastName, email, password))) =>
           c.ctx.authService.signUp(firstName, lastName, email, password)
+        case _ => throw new Exception("Provider not configured.")
       }
     ),
     Field(
