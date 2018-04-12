@@ -53,7 +53,10 @@ $(function (global) {
     function graphQLFetcher(graphQLParams) {
         return fetch(window.location.origin + '/graphql', {
             method: 'post',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Auth-Token': document.getElementById('jwt-token').value
+            },
             body: JSON.stringify(graphQLParams)
         }).then(function (response) {
             return response.json()

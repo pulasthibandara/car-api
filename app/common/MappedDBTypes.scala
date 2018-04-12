@@ -2,6 +2,7 @@ package common
 
 import java.sql.Timestamp
 import java.time.Instant
+import java.util.UUID
 
 import play.api.db.slick.HasDatabaseConfigProvider
 import slick.jdbc.JdbcProfile

@@ -11,6 +11,7 @@ import common.Concurrent._
 import org.specs2.mock.Mockito
 import sangria.schema.{ObjectType, Schema}
 import sangria.schema._
+import vehicle.ListingService
 
 import scala.concurrent.ExecutionContext
 
@@ -40,8 +41,9 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     )))
 
     val authService = inject[AuthService]
+    val listingService = mock[ListingService]
     val variables: JsValue = Json.toJson(Map("signupData" -> signupData))
-    val result = Executor.execute(GraphqlSchema.SchemaDefinition, query, SecureContext(None, authService),
+    val result = Executor.execute(GraphqlSchema.SchemaDefinition, query, SecureContext(None, authService, listingService),
       variables = variables
     ).await
 
@@ -67,10 +69,11 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     ))
 
     val authService = inject[AuthService]
+    val listingService = mock[ListingService]
     val result = Executor.execute(
       GraphqlSchema.SchemaDefinition,
       query,
-      SecureContext(None, authService),
+      SecureContext(None, authService, listingService),
       variables = variables).await
 
     (result \ "data" \ "login").as[String] must beAnInstanceOf[String]
@@ -95,11 +98,12 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     )
 
     val authService = mock[AuthService]
+    val listingService = mock[ListingService]
 
     val result = Executor.execute(
       Schema(securedQuery),
       query,
-      SecureContext(None, authService),
+      SecureContext(None, authService, listingService),
       middleware = SecurityEnforcer :: Nil
     ).await
 
@@ -125,12 +129,13 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     )
 
     val authService = mock[AuthService]
+    val listingService = mock[ListingService]
     val user = mock[User]
 
     val result = Executor.execute(
       Schema(securedQuery),
       query,
-      SecureContext(Some(user), authService),
+      SecureContext(Some(user), authService, listingService),
       middleware = SecurityEnforcer :: Nil
     ).await
 
