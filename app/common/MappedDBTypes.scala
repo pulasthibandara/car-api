@@ -2,12 +2,11 @@ package common
 
 import java.sql.Timestamp
 import java.time.Instant
-import java.util.UUID
 
+import common.database.PgSlickProfile
 import play.api.db.slick.HasDatabaseConfigProvider
-import slick.jdbc.JdbcProfile
 
-trait MappedDBTypes extends HasDatabaseConfigProvider[JdbcProfile] {
+trait MappedDBTypes extends HasDatabaseConfigProvider[PgSlickProfile] {
   import profile.api._
 
   implicit val dateTimeColumnType = MappedColumnType.base[Instant, Timestamp](

@@ -7,25 +7,25 @@ import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.LoginInfo
 import common.MappedDBTypes
+import common.database.PgSlickProfile
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
 
 case class DBUser (id: String, firstName: String, lastName: String, email: String, createdAt: Instant)
 
-trait UserTable extends HasDatabaseConfigProvider[JdbcProfile] with MappedDBTypes {
+trait UserTable extends HasDatabaseConfigProvider[PgSlickProfile] {
   import profile.api._
 
   implicit def toUser(user: DBUser, loginInfo: Option[LoginInfo] = None): User =
     User(UUID.fromString(user.id), user.firstName, user.lastName, user.email, loginInfo, Some(user.createdAt))
 
-  protected class UsersTable(tag: Tag) extends Table[DBUser](tag, "USERS") {
-    def id = column[String]("ID", O.PrimaryKey)
-    def firstName = column[String]("FIRST_NAME")
-    def lastName = column[String]("LAST_NAME")
-    def email = column[String]("EMAIL")
-    def createdAt = column[Instant]("CREATED_AT")
+  protected class UsersTable(tag: Tag) extends Table[DBUser](tag, "users") {
+    def id = column[String]("id", O.PrimaryKey)
+    def firstName = column[String]("first_name")
+    def lastName = column[String]("last_name")
+    def email = column[String]("email")
+    def createdAt = column[Instant]("created_at")
 
     def * = (id, firstName, lastName, email, createdAt) <> ((DBUser.apply _).tupled, DBUser.unapply)
   }

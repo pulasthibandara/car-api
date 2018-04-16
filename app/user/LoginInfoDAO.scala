@@ -4,8 +4,8 @@ import java.time.Instant
 
 import com.mohiva.play.silhouette.api.LoginInfo
 import common.MappedDBTypes
+import common.database.PgSlickProfile
 import play.api.db.slick.HasDatabaseConfigProvider
-import slick.jdbc.JdbcProfile
 
 case class DBLoginInfo(
   id: Option[Long],
@@ -20,21 +20,21 @@ case class DBUserLoginInfo (
 )
 
 
-trait LoginInfosTable extends HasDatabaseConfigProvider[JdbcProfile] with MappedDBTypes {
+trait LoginInfosTable extends HasDatabaseConfigProvider[PgSlickProfile] {
   import profile.api._
 
-  protected class LoginInfos(tag: Tag) extends Table[DBLoginInfo](tag, "LOGIN_INFO") {
-    def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
-    def providerId = column[String]("PROVIDER_ID")
-    def providerKey = column[String]("PROVIDER_KEY")
-    def createdAt = column[Option[Instant]]("CREATED_AT")
+  protected class LoginInfos(tag: Tag) extends Table[DBLoginInfo](tag, "login_info") {
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def providerId = column[String]("provider_id")
+    def providerKey = column[String]("provider_key")
+    def createdAt = column[Option[Instant]]("created_at")
 
     def * = (id.?, providerId, providerKey, createdAt).mapTo[DBLoginInfo]
   }
 
-  protected class UserLoginInfos(tag: Tag) extends Table[DBUserLoginInfo](tag, "USER_LOGIN_INFO") {
-    def userID = column[String]("USER_ID")
-    def loginInfoId = column[Long]("LOGIN_INFO_ID")
+  protected class UserLoginInfos(tag: Tag) extends Table[DBUserLoginInfo](tag, "user_login_info") {
+    def userID = column[String]("user_id")
+    def loginInfoId = column[Long]("login_info_id")
 
     def * = (userID, loginInfoId) <> (DBUserLoginInfo.tupled, DBUserLoginInfo.unapply)
   }

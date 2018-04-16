@@ -13,10 +13,12 @@ scalaVersion := "2.12.2"
 libraryDependencies ++= Seq( ehcache , ws , guice, specs2 % Test )
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "3.0.0",
-  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0"
+  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
+  "com.github.tminglei" %% "slick-pg" % "0.16.1",
+  "com.github.tminglei" %% "slick-pg_play-json" % "0.16.1"
 )
 
-libraryDependencies += "com.h2database" % "h2" % "1.4.196"
+libraryDependencies += "com.h2database" % "h2" % "1.4.197"
 
 libraryDependencies += "org.sangria-graphql" %% "sangria" % "1.3.3"
 libraryDependencies += "org.sangria-graphql" %% "sangria-relay" % "1.3.3"
@@ -32,3 +34,5 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += "net.codingwell" %% "scala-guice" % "4.1.1"
 libraryDependencies += "com.iheart" %% "ficus" % "1.4.3"
+
+javaOptions in Test += "-Dconfig.resource=application.test.conf"

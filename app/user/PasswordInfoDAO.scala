@@ -6,9 +6,8 @@ import java.time.Instant
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.util.PasswordInfo
 import com.mohiva.play.silhouette.persistence.daos.DelegableAuthInfoDAO
-import common.MappedDBTypes
+import common.database.PgSlickProfile
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -20,15 +19,15 @@ case class DBPasswordInfo(
   createdAt: Instant
 )
 
-trait PasswordInfosTable extends HasDatabaseConfigProvider[JdbcProfile] with MappedDBTypes {
+trait PasswordInfosTable extends HasDatabaseConfigProvider[PgSlickProfile] {
   import profile.api._
 
-  protected class PasswordInfos(tag: Tag) extends Table[DBPasswordInfo](tag, "PASSWORD_INFO") {
-    def hasher = column[String]("HASHER")
-    def password = column[String]("PASSWORD")
-    def salt = column[Option[String]]("SALT")
-    def loginInfoId = column[Long]("LOGIN_INFO_ID")
-    def createdAt = column[Instant]("CREATED_AT")
+  protected class PasswordInfos(tag: Tag) extends Table[DBPasswordInfo](tag, "password_info") {
+    def hasher = column[String]("hasher")
+    def password = column[String]("password")
+    def salt = column[Option[String]]("salt")
+    def loginInfoId = column[Long]("login_info_id")
+    def createdAt = column[Instant]("created_at")
 
     def * = (hasher, password, salt, loginInfoId, createdAt)  <> ((DBPasswordInfo.apply _).tupled, DBPasswordInfo.unapply)
   }
@@ -42,7 +41,7 @@ class PasswordInfoDAO @Inject() (
 )(implicit ec: ExecutionContext) extends DelegableAuthInfoDAO[PasswordInfo]
   with PasswordInfosTable
   with LoginInfosTable
-  with HasDatabaseConfigProvider[JdbcProfile] {
+  with HasDatabaseConfigProvider[PgSlickProfile] {
   import profile.api._
 
   implicit def dbPasswordInfoToPasswordInfo(db: DBPasswordInfo): PasswordInfo =

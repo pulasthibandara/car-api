@@ -5,9 +5,8 @@ import java.util.UUID
 import javax.inject.Singleton
 
 import com.google.inject.Inject
-import common.MappedDBTypes
+import common.database.PgSlickProfile
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
 import vehicle.{Make, Model}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,37 +22,38 @@ case class DBMake(
   name: String,
   slug: String)
 
-trait ModelTable extends HasDatabaseConfigProvider[JdbcProfile] with MappedDBTypes {
+trait ModelTable extends HasDatabaseConfigProvider[PgSlickProfile] {
   import profile.api._
 
-  protected class ModelsTable(tag: Tag) extends Table[DBModel](tag, "MODELS") {
-    def id = column[UUID]("ID", O.PrimaryKey)
-    def name = column[String]("NAME")
-    def slug = column[String]("SLUG")
-    def makeId = column[UUID]("MAKE_ID")
-    def createdAt = column[Instant]("CREATED_AT")
+  protected class ModelsTable(tag: Tag) extends Table[DBModel](tag, "models") {
+    def id = column[UUID]("id", O.PrimaryKey)
+    def name = column[String]("name")
+    def slug = column[String]("slug")
+    def makeId = column[UUID]("make_id")
+    def createdAt = column[Instant]("created_at")
 
     def * = (id, name, slug, makeId).mapTo[DBModel]
 
     def make = foreignKey("MAKE_FK", makeId, makes)(_.id)
   }
 
-  protected class MakesTable(tag: Tag) extends Table[DBMake](tag, "MAKES") {
-    def id = column[UUID]("ID", O.PrimaryKey)
-    def name = column[String]("NAME")
-    def slug = column[String]("SLUG")
-    def createdAt = column[Instant]("CREATED_AT")
+  protected class MakesTable(tag: Tag) extends Table[DBMake](tag, "makes") {
+    def id = column[UUID]("id", O.PrimaryKey)
+    def name = column[String]("name")
+    def slug = column[String]("slug")
+    def createdAt = column[Instant]("created_at")
 
     def * = (id, name, slug).mapTo[DBMake]
   }
 
-  protected class UserModels(tag: Tag) extends Table[(UUID, UUID)](tag, "USER_MODELS") {
-    def modelId = column[UUID]("MODEL_ID")
-    def userId = column[UUID]("USER_ID")
+  protected class UserModels(tag: Tag) extends Table[(UUID, UUID)](tag, "user_models") {
+    def modelId = column[UUID]("model_id")
+    def userId = column[UUID]("user_id")
 
     def * = (modelId, userId)
 
-    def model = foreignKey("MODEL_FK", modelId, models)(_.id)
+    def pk = primaryKey("pk_model_user", (modelId, userId))
+    def model = foreignKey("usermodel_model_fk", modelId, models)(_.id)
   }
 
   val models = TableQuery[ModelsTable]

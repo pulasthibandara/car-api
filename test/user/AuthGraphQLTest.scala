@@ -1,7 +1,7 @@
 package user
 
 import org.specs2.mutable.Specification
-import play.api.test.{Injecting, WithApplication}
+import play.api.test.{HasApp, Injecting, WithApplication}
 import play.api.libs.json._
 import sangria.macros._
 import sangria.marshalling.playJson._
@@ -11,6 +11,7 @@ import common.Concurrent._
 import org.specs2.mock.Mockito
 import sangria.schema.{ObjectType, Schema}
 import sangria.schema._
+import testhelpers.{DatabaseIsolation, WithDataEvolutions}
 import vehicle.ListingService
 
 import scala.concurrent.ExecutionContext
@@ -18,7 +19,19 @@ import scala.concurrent.ExecutionContext
 class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with Mockito {
   import user.AuthGraphQL._
 
-  "signup a user" in new WithApplication with Injecting {
+  trait UserData extends WithDataEvolutions {
+    self: HasApp =>
+
+    override def evolutionData: String =
+      """
+        | INSERT INTO users (id, email, first_name, last_name, created_at) VALUES ('b58ec222-2cbd-4509-9f00-e13ea2bb14de', 'pulasthi1989@gmail.com', 'pulasthi', 'bandara', '2018-04-17 01:14:31.490000');
+        | INSERT INTO login_info (id, provider_id, provider_key, created_at) VALUES (1, 'credentials', 'pulasthi1989@gmail.com', null);
+        | INSERT INTO user_login_info (user_id, login_info_id, created_at) VALUES ('b58ec222-2cbd-4509-9f00-e13ea2bb14de', 1, '2018-04-17 01:14:31.524320');
+        | INSERT INTO password_info (hasher, password, salt, login_info_id, created_at) VALUES ('bcrypt-sha256', '$2a$10$giaAKoxtUjFHbx8CIR2OBudPkbGje6Sa5xmt415srKpB2NgypQO3q', null, 1, '2018-04-17 01:14:31.542000');
+      """.stripMargin
+  }
+
+  "signup a user" in new WithApplication with Injecting with DatabaseIsolation {
     lazy val query =
       graphql"""
         mutation signUp($$signupData: SignupData!) {
@@ -52,7 +65,7 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
   }
 
 
-  "authenticate a user" in new WithApplication with Injecting {
+  "authenticate a user" in new WithApplication with Injecting with DatabaseIsolation with UserData  {
     lazy val query =
       graphql"""
         mutation login($$email: String!, $$password: String!) {
