@@ -42,8 +42,9 @@ trait RelayInterfaceTypes {
 }
 
 @Singleton
-class GraphqlSchema @Inject() (
-  vehicleGraphql: VehicleGraphQL
+class GraphQLSchema @Inject() (
+  vehicleGraphQL: VehicleGraphQL,
+  authGraphQL: AuthGarphQL
 ) {
 
   val QueryType = ObjectType(
@@ -53,7 +54,7 @@ class GraphqlSchema @Inject() (
         "test",
         StringType,
         Some("Fetch all users"),
-        tags = AuthGraphQL.Authorized :: Nil,
+        tags = GraphQLAuthentication.Authorized :: Nil,
         resolve = c => "test"
       )
     )
@@ -62,8 +63,8 @@ class GraphqlSchema @Inject() (
   val MutationType = ObjectType(
     "Mutation",
     fields[SecureContext, Unit](
-      AuthGraphQL.mutations() ++
-        vehicleGraphql.mutations:_*
+      authGraphQL.mutations() ++
+        vehicleGraphQL.mutations:_*
 //      Field(
 //        "createUser",
 //        UserType,

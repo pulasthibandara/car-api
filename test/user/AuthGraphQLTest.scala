@@ -16,8 +16,8 @@ import vehicle.ListingService
 
 import scala.concurrent.ExecutionContext
 
-class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with Mockito {
-  import user.AuthGraphQL._
+class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with Mockito with AuthGraphQLImplicits {
+  import GraphQLAuthentication._
 
   sequential
 
@@ -56,7 +56,7 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     )))
 
     val authService = inject[AuthService]
-    val graphQLSchema = inject[GraphqlSchema]
+    val graphQLSchema = inject[GraphQLSchema]
     val listingService = mock[ListingService]
     val variables: JsValue = Json.toJson(Map("signupData" -> signupData))
     val result = Executor.execute(graphQLSchema.SchemaDefinition, query, SecureContext(None, authService, listingService),
@@ -85,7 +85,7 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     ))
 
     val authService = inject[AuthService]
-    val graphQLSchema = inject[GraphqlSchema]
+    val graphQLSchema = inject[GraphQLSchema]
     val listingService = mock[ListingService]
     val result = Executor.execute(
       graphQLSchema.SchemaDefinition,
@@ -109,7 +109,7 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
       fields[SecureContext, Unit](Field(
         "secureContent",
         StringType,
-        tags = AuthGraphQL.Authorized :: Nil,
+        tags = GraphQLAuthentication.Authorized :: Nil,
         resolve = c => "success!"
       ))
     )
@@ -140,7 +140,7 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
       fields[SecureContext, Unit](Field(
         "secureContent",
         StringType,
-        tags = AuthGraphQL.Authorized :: Nil,
+        tags = GraphQLAuthentication.Authorized :: Nil,
         resolve = c => "success!"
       ))
     )

@@ -37,7 +37,7 @@ case class Model(id: UUID, name: String, slug: String, make: Make)
 
 case class Make(id: UUID, name: String, slug: String)
 
-trait VehicleGraphQLImplicits extends CommonGraphQLScalarTypes with RelayInterfaceTypes {
+trait LowPriorityVehicleGraphQLImplicits extends CommonGraphQLScalarTypes with RelayInterfaceTypes {
   implicit lazy val BodyTypeType = deriveEnumType[BodyType.Value]()
   implicit lazy val FuelTypeType = deriveEnumType[FuelType.Value]()
   implicit lazy val TransmissionTypeType = deriveEnumType[TransmissionType.Value]()

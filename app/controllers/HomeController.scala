@@ -14,7 +14,7 @@ import sangria.parser.QueryParser
 import sangria.ast.Document
 import sangria.execution._
 import sangria.marshalling.playJson._
-import user.AuthGraphQL.SecurityEnforcer
+import GraphQLAuthentication.SecurityEnforcer
 import vehicle.ListingService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,7 +29,7 @@ class HomeController @Inject()(
   listingService: ListingService,
   cc: ControllerComponents,
   silhouette: Silhouette[DefaultEnv],
-  graphqlSchema: GraphqlSchema
+  graphqlSchema: GraphQLSchema
 )(implicit exec: ExecutionContext) extends AbstractController(cc) {
 
   /**
