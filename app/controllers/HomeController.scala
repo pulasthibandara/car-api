@@ -28,7 +28,8 @@ class HomeController @Inject()(
   authService: AuthService,
   listingService: ListingService,
   cc: ControllerComponents,
-  silhouette: Silhouette[DefaultEnv]
+  silhouette: Silhouette[DefaultEnv],
+  graphqlSchema: GraphqlSchema
 )(implicit exec: ExecutionContext) extends AbstractController(cc) {
 
   /**
@@ -62,7 +63,7 @@ class HomeController @Inject()(
   private def executeGraphQL(query: Document, operation: Option[String], vars: JsObject)
     (implicit request: UserAwareRequest[DefaultEnv, GraphQLRequest]) = {
     Executor.execute(
-      GraphqlSchema.SchemaDefinition,
+      graphqlSchema.SchemaDefinition,
       query,
       SecureContext(
         identity = request.identity,

@@ -1,9 +1,13 @@
 package models
 
+import javax.inject.Singleton
+
+import com.google.inject.Inject
+import sangria.relay.{GlobalId, Identifiable, Node, NodeDefinition}
 import sangria.schema._
 import user._
 import vehicle.ListingService
-import vehicle.{ GraphQL => VehicleGraphql }
+import vehicle.VehicleGraphQL
 
 case class SecureContext(
   identity: Option[User],
@@ -11,7 +15,37 @@ case class SecureContext(
   listingService: ListingService
 )
 
-object GraphqlSchema {
+trait RelayInterfaceTypes {
+  /**
+    * We get the node interface and field from the relay library.
+    *
+    * The first method is the way we resolve an ID to its object. The second is the
+    * way we resolve an object that implements node to its type.
+    */
+  val NodeDefinition(nodeInterface, nodeField, nodesField) =
+    Node.definition((globalId: GlobalId, ctx: Context[SecureContext, Unit]) => {
+      if (globalId.typeName == "Vehicle")
+        ???
+      else if (globalId.typeName == "User")
+        ???
+      else
+        None
+    }, Node.possibleNodeTypes[SecureContext, Node]())
+
+  /**
+    * Extracts id value from an Identifiable type
+    */
+  def idFields[T: Identifiable] = fields[Unit, T](
+    Node.globalIdField,
+    Field("rawId", StringType, resolve = ctx => implicitly[Identifiable[T]].id(ctx.value))
+  )
+}
+
+@Singleton
+class GraphqlSchema @Inject() (
+  vehicleGraphql: VehicleGraphQL
+) {
+
   val QueryType = ObjectType(
     "Query",
     fields[SecureContext, Unit](
@@ -29,7 +63,7 @@ object GraphqlSchema {
     "Mutation",
     fields[SecureContext, Unit](
       AuthGraphQL.mutations() ++
-      VehicleGraphql.mutations:_*
+        vehicleGraphql.mutations:_*
 //      Field(
 //        "createUser",
 //        UserType,

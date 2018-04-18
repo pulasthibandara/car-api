@@ -19,6 +19,8 @@ import scala.concurrent.ExecutionContext
 class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with Mockito {
   import user.AuthGraphQL._
 
+  sequential
+
   trait UserData extends WithDataEvolutions {
     self: HasApp =>
 
@@ -54,9 +56,10 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     )))
 
     val authService = inject[AuthService]
+    val graphQLSchema = inject[GraphqlSchema]
     val listingService = mock[ListingService]
     val variables: JsValue = Json.toJson(Map("signupData" -> signupData))
-    val result = Executor.execute(GraphqlSchema.SchemaDefinition, query, SecureContext(None, authService, listingService),
+    val result = Executor.execute(graphQLSchema.SchemaDefinition, query, SecureContext(None, authService, listingService),
       variables = variables
     ).await
 
@@ -82,9 +85,10 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     ))
 
     val authService = inject[AuthService]
+    val graphQLSchema = inject[GraphqlSchema]
     val listingService = mock[ListingService]
     val result = Executor.execute(
-      GraphqlSchema.SchemaDefinition,
+      graphQLSchema.SchemaDefinition,
       query,
       SecureContext(None, authService, listingService),
       variables = variables).await
