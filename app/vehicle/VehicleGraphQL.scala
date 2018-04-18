@@ -5,9 +5,9 @@ import javax.inject.Singleton
 
 import sangria.schema._
 import sangria.macros.derive._
-import sangria.relay.Mutation
+import sangria.relay.{Connection, ConnectionDefinition, Mutation, Node}
 import sangria.marshalling.playJson._
-import _root_.models.{GraphQLAuthentication, SecureContext}
+import _root_.models.{GraphQLAuthentication, RelayInterfaceTypes, SecureContext}
 import com.google.inject.Inject
 import play.api.libs.json.Json
 
@@ -75,9 +75,29 @@ class VehicleGraphQL @Inject() (
   )
 }
 
-trait VehicleGraphQLImplicits extends LowPriorityVehicleGraphQLImplicits {
+trait VehicleGraphQLImplicits extends VehicleGraphQLTypes {
   implicit val createListingArgsReads = Json.reads[CreateListingArgs]
   implicit val createListingInputTypeReads = Json.reads[CreateListingInputType]
 
   implicit val CreateListingArgsInputType = deriveInputObjectType[CreateListingArgs]()
+}
+
+trait VehicleGraphQLTypes extends LowPriorityVehicleGraphQLImplicits with RelayInterfaceTypes {
+  implicit lazy val MakeType = deriveObjectType[Unit, Make](
+    ReplaceField[Unit, Make]("id", Node.globalIdField[Unit, Make]),
+    Interfaces[Unit, Make](nodeInterface.asInstanceOf[InterfaceType[Unit, Make]])
+  )
+
+  implicit lazy val ModelType = deriveObjectType[Unit, Model](
+    ReplaceField[Unit, Model]("id", Node.globalIdField[Unit, Model]),
+    Interfaces[Unit, Model](nodeInterface.asInstanceOf[InterfaceType[Unit, Model]])
+  )
+
+  implicit lazy val ListingType: ObjectType[_, Listing] = deriveObjectType[Unit, Listing](
+    ReplaceField[Unit, Listing]("id", Node.globalIdField[Unit, Listing]),
+    Interfaces[Unit, Listing](nodeInterface.asInstanceOf[InterfaceType[Unit, Listing]])
+  )
+
+  val ConnectionDefinition(_, listingConnectionType) =
+    Connection.definition[SecureContext, Connection, Listing]("Listing", ListingType)
 }

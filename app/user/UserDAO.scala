@@ -12,22 +12,23 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class DBUser (id: String, firstName: String, lastName: String, email: String, createdAt: Instant)
+case class DBUser (id: String, firstName: String, lastName: String, email: String, businessId: Option[UUID], createdAt: Instant)
 
 trait UserTable extends HasDatabaseConfigProvider[PgSlickProfile] {
   import profile.api._
 
   implicit def toUser(user: DBUser, loginInfo: Option[LoginInfo] = None): User =
-    User(UUID.fromString(user.id), user.firstName, user.lastName, user.email, loginInfo, Some(user.createdAt))
+    User(UUID.fromString(user.id), user.firstName, user.lastName, user.email, None, loginInfo, Some(user.createdAt))
 
   protected class UsersTable(tag: Tag) extends Table[DBUser](tag, "users") {
     def id = column[String]("id", O.PrimaryKey)
     def firstName = column[String]("first_name")
     def lastName = column[String]("last_name")
     def email = column[String]("email")
+    def businessId = column[Option[UUID]]("business_id")
     def createdAt = column[Instant]("created_at")
 
-    def * = (id, firstName, lastName, email, createdAt) <> ((DBUser.apply _).tupled, DBUser.unapply)
+    def * = (id, firstName, lastName, email, businessId, createdAt) <> ((DBUser.apply _).tupled, DBUser.unapply)
   }
 
   val users = TableQuery[UsersTable]
@@ -51,6 +52,7 @@ class UserDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)
       firstName = user.firstName,
       lastName = user.lastName,
       email = user.email,
+      businessId = user.businessId,
       createdAt = Instant.now
     )
     val dbLoginInfo: DBLoginInfo = user.loginInfo
@@ -85,6 +87,7 @@ class UserDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)
           user.firstName,
           user.lastName,
           user.email,
+          None,
           Some(loginInfo),
           Some(user.createdAt)
         )

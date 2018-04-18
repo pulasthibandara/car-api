@@ -7,16 +7,29 @@ import play.api.libs.json.Json
 import sangria.marshalling.playJson._
 import sangria.execution._
 import sangria.macros.derive._
+import sangria.relay.Connection
 import sangria.schema._
 import user.User.UserType
+import vehicle.Listing
 
 trait AuthProviderData
 case class AuthProviderCredentials(firstName: String, lastName: String, email: String, password: String)
   extends AuthProviderData
 case class SignupData(credentials: Option[AuthProviderCredentials])
 
+case class Business(
+  listings: Connection[Listing]
+)
+
 @Singleton
 class AuthGarphQL @Inject() () extends AuthGraphQLImplicits  {
+//  def queries(): List[Field[SecureContext, Unit]] = List(
+//    Field(
+//      "business",
+//
+//    )
+//  )
+
   def mutations(): List[Field[SecureContext, Unit]] = List(
     Field(
       "signUp",
@@ -51,4 +64,6 @@ trait AuthGraphQLImplicits {
   protected val passwordArg = Argument("password", StringType)
 }
 
+trait AuthGraphQLTypes {
 
+}

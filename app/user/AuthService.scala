@@ -27,7 +27,7 @@ class AuthService @Inject()(
   def signUp(firstName: String, lastName: String, email: String, password: String): Future[User] = {
     val userId = UUID.randomUUID()
     val loginInfo = LoginInfo(CredentialsProvider.ID, email)
-    val user = User(userId, firstName, lastName, email, Some(loginInfo))
+    val user = User(userId, firstName, lastName, email, None, Some(loginInfo))
 
     userDAO.find(email).flatMap {
       case Some(_) => throw new UserAlreadyExists(user.email)
