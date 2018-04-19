@@ -55,6 +55,8 @@ class VehicleGraphQL @Inject() (
         val CreateListingInputType(listing, clientMutationId) = input
         c.ctx.listingService.createListing(
           listing.id,
+          c.ctx.identity.get.businessId
+            .getOrElse(throw new UserHasNoBusinessDefined("User needs to have a business to create a listing.")),
           c.ctx.identity.get.id,
           listing.modelId,
           listing.title,

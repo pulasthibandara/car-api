@@ -15,7 +15,7 @@ case class DBListing(
   id: UUID,
   makeId: UUID,
   modelId: UUID,
-  userId: UUID,
+  businessId: UUID,
   title: String,
   slug: String,
   description: String,
@@ -29,6 +29,7 @@ case class DBListing(
   engineSize: Option[Int],
   conditionType: Option[ConditionType.Value],
   features: List[String],
+  createdBy: UUID,
   createdAt: Instant = Instant.now)
 
 trait ListingTable extends HasDatabaseConfigProvider[PgSlickProfile] with VehicleEnumDBMappings {
@@ -38,7 +39,7 @@ trait ListingTable extends HasDatabaseConfigProvider[PgSlickProfile] with Vehicl
     def id = column[UUID]("id", O.PrimaryKey)
     def makeId = column[UUID]("make_id")
     def modelId = column[UUID]("model_id")
-    def userId = column[UUID]("user_id")
+    def businessId = column[UUID]("business_id")
     def title = column[String]("title")
     def slug = column[String]("slug")
     def description = column[String]("description")
@@ -52,10 +53,11 @@ trait ListingTable extends HasDatabaseConfigProvider[PgSlickProfile] with Vehicl
     def engineSize = column[Option[Int]]("engine_size")
     def conditionType = column[Option[ConditionType.Value]]("condition_type")
     def features = column[List[String]]("features")
+    def createdBy = column[UUID]("created_by")
     def createdAt = column[Instant]("created_at")
 
-    def * = (id, makeId, modelId, userId, title, slug, description, year, kilometers, color,
-      bodyType, fuelType, transmissionType, cylinders, engineSize, conditionType, features, createdAt) <>
+    def * = (id, makeId, modelId, businessId, title, slug, description, year, kilometers, color,
+      bodyType, fuelType, transmissionType, cylinders, engineSize, conditionType, features, createdBy, createdAt) <>
       (DBListing.tupled, DBListing.unapply)
   }
 
@@ -76,7 +78,7 @@ class ListingDAO @Inject() (
       id = listing.id,
       makeId = listing.makeId,
       modelId = listing.modelId,
-      userId = listing.userId,
+      businessId = listing.businessId,
       title = listing.title,
       slug = listing.slug,
       description = listing.description,
@@ -89,7 +91,8 @@ class ListingDAO @Inject() (
       cylinders = listing.cylinders,
       engineSize = listing.engineSize,
       conditionType = listing.conditionType,
-      features = listing.features
+      features = listing.features,
+      createdBy = listing.createdBy
     )
 
     db.run {
@@ -102,9 +105,9 @@ class ListingDAO @Inject() (
   /**
     * Returns all slugs starting with the given slug.
     */
-  def getAllSlugsStartingWithSlug(slug: String, userId: UUID): Future[Seq[String]] = db.run {
+  def getAllSlugsStartingWithSlug(slug: String, businessId: UUID): Future[Seq[String]] = db.run {
     listings.filter(_.slug.startsWith(slug))
-      .filter(_.userId === userId)
+      .filter(_.businessId === businessId)
       .map(_.slug)
       .result
   }

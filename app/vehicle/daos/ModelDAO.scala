@@ -46,14 +46,14 @@ trait ModelTable extends HasDatabaseConfigProvider[PgSlickProfile] {
     def * = (id, name, slug).mapTo[DBMake]
   }
 
-  protected class UserModels(tag: Tag) extends Table[(UUID, UUID)](tag, "user_models") {
+  protected class UserModels(tag: Tag) extends Table[(UUID, UUID)](tag, "business_models") {
     def modelId = column[UUID]("model_id")
-    def userId = column[UUID]("user_id")
+    def businessId = column[UUID]("business_id")
 
-    def * = (modelId, userId)
+    def * = (modelId, businessId)
 
-    def pk = primaryKey("pk_model_user", (modelId, userId))
-    def model = foreignKey("usermodel_model_fk", modelId, models)(_.id)
+    def pk = primaryKey("pk_model_business", (modelId, businessId))
+    def model = foreignKey("businessmodel_model_fk", modelId, models)(_.id)
   }
 
   val models = TableQuery[ModelsTable]
@@ -92,8 +92,8 @@ class ModelDAO @Inject() (
   /**
     * Insert user model mapping if not exist
     */
-  def upsertUserModelMapping(modelId: UUID, userId: UUID) = db.run {
-    userModels.insertOrUpdate(modelId, userId)
+  def upsertUserModelMapping(modelId: UUID, businessId: UUID) = db.run {
+    userModels.insertOrUpdate(modelId, businessId)
   }
 }
 

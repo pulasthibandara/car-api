@@ -14,7 +14,7 @@ case class Listing(
   id: UUID,
   makeId: UUID,
   modelId: UUID,
-  userId: UUID,
+  businessId: UUID,
   title: String,
   slug: String,
   description: String,
@@ -28,6 +28,7 @@ case class Listing(
   engineSize: Option[Int],
   conditionType: Option[ConditionType.Value],
   features: List[String],
+  createdBy: UUID,
   createdAt: Option[Instant]
 )
 

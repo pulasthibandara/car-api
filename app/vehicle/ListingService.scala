@@ -15,6 +15,7 @@ class ListingService @Inject() (
 ) (implicit ec: ExecutionContext) {
   def createListing(
     id: Option[UUID],
+    businessId: UUID,
     userId: UUID,
     modelId: UUID,
     title: String,
@@ -36,25 +37,25 @@ class ListingService @Inject() (
         .map(_.fold(throw VehicleModelNotFoundException(s"Cannot find model: ${modelId.toString}"))(identity))
 
       // generate listing slug
-      slug <- resolveSlug(title, userId)
+      slug <- resolveSlug(title, businessId)
 
       _id = id.getOrElse(UUID.randomUUID)
 
-      listing = Listing(_id, model.make.id, model.id, userId, title, slug, description, year, kilometers,
-        color, bodyType, fuelType, transmissionType, cylinders, engineSize, conditionType, features, None)
+      listing = Listing(_id, model.make.id, model.id, businessId, title, slug, description, year, kilometers,
+        color, bodyType, fuelType, transmissionType, cylinders, engineSize, conditionType, features, userId, None)
 
       // save the new listing
       createdListing <- listingDAO.save(listing)
 
       // upsert user model mapping
-      _ <- modelDAO.upsertUserModelMapping(modelId, userId)
+      _ <- modelDAO.upsertUserModelMapping(modelId, businessId)
     } yield createdListing
 
   /**
     * Resolves a slug that doesn't already exist.
     */
-  protected  def resolveSlug(title: String, userId: UUID): Future[String] = listingDAO
-    .getAllSlugsStartingWithSlug(title.slug, userId)
+  protected  def resolveSlug(title: String, businessId: UUID): Future[String] = listingDAO
+    .getAllSlugsStartingWithSlug(title.slug, businessId)
     .map { slugs => Sluggify.resolveSlug(title, slugs) }
 
 }
