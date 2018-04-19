@@ -2,6 +2,7 @@ package models
 
 import javax.inject.Singleton
 
+import business.graphql.BusinessGraphQL
 import business.services.BusinessService
 import com.google.inject.Inject
 import sangria.relay.{GlobalId, Identifiable, Node, NodeDefinition}
@@ -46,7 +47,8 @@ trait RelayInterfaceTypes {
 @Singleton
 class GraphQLSchema @Inject() (
   vehicleGraphQL: VehicleGraphQL,
-  authGraphQL: AuthGarphQL
+  authGraphQL: AuthGarphQL,
+  businessGraphQL: BusinessGraphQL
 ) {
 
   val QueryType = ObjectType(
@@ -66,13 +68,8 @@ class GraphQLSchema @Inject() (
     "Mutation",
     fields[SecureContext, Unit](
       authGraphQL.mutations() ++
-        vehicleGraphQL.mutations:_*
-//      Field(
-//        "createUser",
-//        UserType,
-//        arguments = NameArg :: AuthProviderArg :: Nil,
-//        resolve = c => c.ctx.userRepository.create(c.arg(NameArg), c.arg(AuthProviderArg))
-//      )
+        vehicleGraphQL.mutations ++
+        businessGraphQL.mutations:_*
     )
   )
 
