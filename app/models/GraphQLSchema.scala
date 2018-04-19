@@ -2,6 +2,7 @@ package models
 
 import javax.inject.Singleton
 
+import business.services.BusinessService
 import com.google.inject.Inject
 import sangria.relay.{GlobalId, Identifiable, Node, NodeDefinition}
 import sangria.schema._
@@ -12,7 +13,8 @@ import vehicle.VehicleGraphQL
 case class SecureContext(
   identity: Option[User],
   authService: AuthService,
-  listingService: ListingService
+  listingService: ListingService,
+  businessService: BusinessService
 )
 
 trait RelayInterfaceTypes {

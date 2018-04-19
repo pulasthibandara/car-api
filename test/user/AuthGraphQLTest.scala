@@ -1,5 +1,6 @@
 package user
 
+import business.services.BusinessService
 import org.specs2.mutable.Specification
 import play.api.test.{HasApp, Injecting, WithApplication}
 import play.api.libs.json._
@@ -58,8 +59,9 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     val authService = inject[AuthService]
     val graphQLSchema = inject[GraphQLSchema]
     val listingService = mock[ListingService]
+    val businessService = mock[BusinessService]
     val variables: JsValue = Json.toJson(Map("signupData" -> signupData))
-    val result = Executor.execute(graphQLSchema.SchemaDefinition, query, SecureContext(None, authService, listingService),
+    val result = Executor.execute(graphQLSchema.SchemaDefinition, query, SecureContext(None, authService, listingService, businessService),
       variables = variables
     ).await
 
@@ -87,10 +89,11 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     val authService = inject[AuthService]
     val graphQLSchema = inject[GraphQLSchema]
     val listingService = mock[ListingService]
+    val businessService = mock[BusinessService]
     val result = Executor.execute(
       graphQLSchema.SchemaDefinition,
       query,
-      SecureContext(None, authService, listingService),
+      SecureContext(None, authService, listingService, businessService),
       variables = variables).await
 
     (result \ "data" \ "login").as[String] must beAnInstanceOf[String]
@@ -116,11 +119,12 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
 
     val authService = mock[AuthService]
     val listingService = mock[ListingService]
+    val businessService = mock[BusinessService]
 
     val result = Executor.execute(
       Schema(securedQuery),
       query,
-      SecureContext(None, authService, listingService),
+      SecureContext(None, authService, listingService, businessService),
       middleware = SecurityEnforcer :: Nil
     ).await
 
@@ -147,12 +151,13 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
 
     val authService = mock[AuthService]
     val listingService = mock[ListingService]
+    val businessService = mock[BusinessService]
     val user = mock[User]
 
     val result = Executor.execute(
       Schema(securedQuery),
       query,
-      SecureContext(Some(user), authService, listingService),
+      SecureContext(Some(user), authService, listingService, businessService),
       middleware = SecurityEnforcer :: Nil
     ).await
 

@@ -3,11 +3,13 @@ package user
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
+import akka.actor.ActorSystem
 import com.mohiva.play.silhouette.api.{LoginInfo, Silhouette}
 import com.mohiva.play.silhouette.api.util.{Credentials, PasswordHasherRegistry}
 import com.mohiva.play.silhouette.impl.exceptions.IdentityNotFoundException
 import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
 import common.UUIDImplitits
+import user.events.UserCreated
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,7 +20,8 @@ class AuthService @Inject()(
   passwordHasherRegistry: PasswordHasherRegistry,
   credentialsProvider: CredentialsProvider,
   userService: UserService,
-  silhouette: Silhouette[DefaultEnv]
+  silhouette: Silhouette[DefaultEnv],
+  actorSystem: ActorSystem
 )(implicit ec: ExecutionContext) extends UUIDImplitits {
 
   /**
@@ -29,10 +32,17 @@ class AuthService @Inject()(
     val loginInfo = LoginInfo(CredentialsProvider.ID, email)
     val user = User(userId, firstName, lastName, email, None, Some(loginInfo))
 
-    userDAO.find(email).flatMap {
+    val maybeCreatedUser = userDAO.find(email).flatMap {
       case Some(_) => throw new UserAlreadyExists(user.email)
       case None => createUser(user, password)
     }
+
+    maybeCreatedUser.foreach { case u => actorSystem
+      .eventStream
+      .publish(UserCreated(u))
+    }
+
+    maybeCreatedUser
   }
 
   /**
