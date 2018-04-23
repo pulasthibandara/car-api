@@ -27,7 +27,7 @@ class BusinessGraphQL @Inject() (implicit ec: ExecutionContext) extends RelayInt
       ),
       mutateAndGetPayload = {
         case (CreateBusinessInputType(b, clientMutationId), c) =>
-          c.ctx.businessService.createBusiness(b.name, b.domain, b.subdomain)
+          c.ctx.businessService.createBusiness(b.name, b.domain, b.subdomain, c.ctx.identity.get)
             .map(CreateBusinessPayload(_, clientMutationId))
       }
     )

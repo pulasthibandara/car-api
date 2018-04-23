@@ -87,7 +87,7 @@ class UserDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)
           user.firstName,
           user.lastName,
           user.email,
-          None,
+          user.businessId,
           Some(loginInfo),
           Some(user.createdAt)
         )
@@ -103,4 +103,12 @@ class UserDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)
     db.run { users.filter(_.email === email).result.headOption }
       .map { _.map(toUser(_)) }
   }
+
+  /**
+    * Adds a business to the user.
+    */
+  def updateBusiness(user: User, businessId: UUID): Future[User] = db.run {
+    users.filter(_.id === user.id.toString).map(_.businessId)
+      .update(Some(businessId))
+  }.map(_ => user.copy(businessId = Some(businessId)))
 }

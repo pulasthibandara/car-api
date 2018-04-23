@@ -19,10 +19,12 @@ import play.api.libs.ws.WSClient
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import net.ceedubs.ficus.readers.EnumerationReader._
+import play.api.libs.concurrent.AkkaGuiceSupport
+import user.events.BusinessListener
 
 import scala.concurrent.ExecutionContext
 
-class AuthModule extends AbstractModule with ScalaModule {
+class AuthModule extends AbstractModule with ScalaModule with AkkaGuiceSupport {
   def configure(): Unit = {
     bind[Silhouette[DefaultEnv]].to[SilhouetteProvider[DefaultEnv]]
     bind[CacheLayer].to[PlayCacheLayer]
@@ -34,6 +36,10 @@ class AuthModule extends AbstractModule with ScalaModule {
 
     // Social + Password
     bind[DelegableAuthInfoDAO[PasswordInfo]].to[PasswordInfoDAO]
+
+    // Akka actors
+    // -- event listeners
+    bindActor[BusinessListener]("user:business-event-listener")
   }
 
   /**

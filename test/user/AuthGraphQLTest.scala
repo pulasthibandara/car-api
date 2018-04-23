@@ -7,7 +7,7 @@ import play.api.libs.json._
 import sangria.macros._
 import sangria.marshalling.playJson._
 import sangria.execution._
-import models._
+import _root_.models._
 import common.Concurrent._
 import org.specs2.mock.Mockito
 import sangria.schema.{ObjectType, Schema}
