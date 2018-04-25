@@ -1,7 +1,6 @@
 package models
 
 import javax.inject.Singleton
-
 import business.graphql.BusinessGraphQL
 import business.services.BusinessService
 import com.google.inject.Inject
@@ -11,11 +10,14 @@ import user._
 import vehicle.ListingService
 import vehicle.VehicleGraphQL
 
+import scala.concurrent.ExecutionContext
+
 case class SecureContext(
   identity: Option[User],
   authService: AuthService,
   listingService: ListingService,
-  businessService: BusinessService
+  businessService: BusinessService,
+  implicit val ec: ExecutionContext
 )
 
 trait RelayInterfaceTypes {
@@ -44,32 +46,28 @@ trait RelayInterfaceTypes {
   )
 }
 
-@Singleton
-class GraphQLSchema @Inject() (
-  vehicleGraphQL: VehicleGraphQL,
-  authGraphQL: AuthGarphQL,
-  businessGraphQL: BusinessGraphQL
-) {
+object GraphQLSchema {
 
   val QueryType = ObjectType(
     "Query",
     fields[SecureContext, Unit](
-      Field(
-        "test",
-        StringType,
-        Some("Fetch all users"),
-        tags = GraphQLAuthentication.Authorized :: Nil,
-        resolve = c => "test"
-      )
+//      Field(
+//        "test",
+//        StringType,
+//        Some("Fetch all users"),
+//        tags = GraphQLAuthentication.Authorized :: Nil,
+//        resolve = c => "test"
+//      ),
+      BusinessGraphQL.queries: _*
     )
   )
 
   val MutationType = ObjectType(
     "Mutation",
     fields[SecureContext, Unit](
-      authGraphQL.mutations() ++
-        vehicleGraphQL.mutations ++
-        businessGraphQL.mutations:_*
+      AuthGarphQL.mutations() ++
+        VehicleGraphQL.mutations ++
+        BusinessGraphQL.mutations:_*
     )
   )
 

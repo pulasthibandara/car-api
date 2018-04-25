@@ -58,4 +58,10 @@ class ListingService @Inject() (
     .getAllSlugsStartingWithSlug(title.slug, businessId)
     .map { slugs => Sluggify.resolveSlug(title, slugs) }
 
+  /**
+    * Fetch a listing for a specific business id
+    */
+  def listingsByBusinessId(businessId: UUID): Future[Seq[Listing]] = listingDAO
+    .getByBusiness(businessId)
+
 }

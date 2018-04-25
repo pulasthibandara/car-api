@@ -10,6 +10,7 @@ import sangria.execution._
 import _root_.models._
 import common.Concurrent._
 import org.specs2.mock.Mockito
+import org.specs2.specification.Scope
 import sangria.schema.{ObjectType, Schema}
 import sangria.schema._
 import testhelpers.{DatabaseIsolation, WithDataEvolutions}
@@ -34,7 +35,15 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
       """.stripMargin
   }
 
-  "signup a user" in new WithApplication with Injecting with DatabaseIsolation {
+  trait WithSecureContext {
+    val authService = mock[AuthService]
+    val listingService = mock[ListingService]
+    val businessService = mock[BusinessService]
+
+    def secureContext = SecureContext(None, authService, listingService, businessService, ec)
+  }
+
+  "signup a user" in new WithApplication with Injecting with DatabaseIsolation with WithSecureContext {
     lazy val query =
       graphql"""
         mutation signUp($$signupData: SignupData!) {
@@ -56,21 +65,21 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
       password = "testing"
     )))
 
-    val authService = inject[AuthService]
-    val graphQLSchema = inject[GraphQLSchema]
-    val listingService = mock[ListingService]
-    val businessService = mock[BusinessService]
+    override  val authService = inject[AuthService]
+
     val variables: JsValue = Json.toJson(Map("signupData" -> signupData))
-    val result = Executor.execute(graphQLSchema.SchemaDefinition, query, SecureContext(None, authService, listingService, businessService),
-      variables = variables
-    ).await
+    val result = Executor.execute(
+      GraphQLSchema.SchemaDefinition,
+      query,
+      secureContext,
+      variables = variables).await
 
     (result \ "data" \ "signUp" \ "firstName").as[String] must_== "pulasthi"
     (result \ "errors").isInstanceOf[JsUndefined] must_== true
   }
 
 
-  "authenticate a user" in new WithApplication with Injecting with DatabaseIsolation with UserData  {
+  "authenticate a user" in new WithApplication with Injecting with DatabaseIsolation with UserData with WithSecureContext  {
     lazy val query =
       graphql"""
         mutation login($$email: String!, $$password: String!) {
@@ -86,20 +95,17 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
       "password" -> password,
     ))
 
-    val authService = inject[AuthService]
-    val graphQLSchema = inject[GraphQLSchema]
-    val listingService = mock[ListingService]
-    val businessService = mock[BusinessService]
+    override val authService = inject[AuthService]
     val result = Executor.execute(
-      graphQLSchema.SchemaDefinition,
+      GraphQLSchema.SchemaDefinition,
       query,
-      SecureContext(None, authService, listingService, businessService),
+      secureContext,
       variables = variables).await
 
     (result \ "data" \ "login").as[String] must beAnInstanceOf[String]
   }
 
-  "security enforcer stops unauthorized requests" in {
+  "security enforcer stops unauthorized requests" in new Scope with WithSecureContext {
     val query =
       graphql"""
         query {
@@ -117,21 +123,17 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
       ))
     )
 
-    val authService = mock[AuthService]
-    val listingService = mock[ListingService]
-    val businessService = mock[BusinessService]
-
     val result = Executor.execute(
       Schema(securedQuery),
       query,
-      SecureContext(None, authService, listingService, businessService),
+      secureContext,
       middleware = SecurityEnforcer :: Nil
     ).await
 
     (result \ "errors").isInstanceOf[JsDefined] must_== true
   }
 
-  "security enforcer allows authorized requests" in  {
+  "security enforcer allows authorized requests" in new Scope with WithSecureContext {
     val query =
       graphql"""
         query {
@@ -149,15 +151,12 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
       ))
     )
 
-    val authService = mock[AuthService]
-    val listingService = mock[ListingService]
-    val businessService = mock[BusinessService]
     val user = mock[User]
 
     val result = Executor.execute(
       Schema(securedQuery),
       query,
-      SecureContext(Some(user), authService, listingService, businessService),
+      secureContext,
       middleware = SecurityEnforcer :: Nil
     ).await
 

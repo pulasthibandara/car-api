@@ -1,7 +1,6 @@
 package vehicle
 
 import java.util.UUID
-import javax.inject.Singleton
 
 import sangria.schema._
 import sangria.macros.derive._
@@ -10,6 +9,7 @@ import sangria.marshalling.playJson._
 import _root_.models.{GraphQLAuthentication, RelayInterfaceTypes, SecureContext}
 import com.google.inject.Inject
 import play.api.libs.json.Json
+import sangria.execution.deferred.Fetcher
 
 import scala.concurrent.ExecutionContext
 
@@ -37,10 +37,7 @@ case class CreateListingPayload(
   clientMutationId: Option[String]
 ) extends Mutation
 
-@Singleton
-class VehicleGraphQL @Inject() (
-  implicit ec: ExecutionContext
-) extends VehicleGraphQLImplicits {
+object VehicleGraphQL extends VehicleGraphQLImplicits {
 
   val mutations: List[Field[SecureContext, Unit]] = List(
     Mutation.fieldWithClientMutationId[SecureContext, Unit, CreateListingPayload, CreateListingInputType](
@@ -52,6 +49,8 @@ class VehicleGraphQL @Inject() (
         Field("listing", ListingType, resolve = ctx => ctx.value.listing)
       ),
       mutateAndGetPayload = (input, c) ⇒ {
+        import c.ctx.ec
+
         val CreateListingInputType(listing, clientMutationId) = input
         c.ctx.listingService.createListing(
           listing.id,

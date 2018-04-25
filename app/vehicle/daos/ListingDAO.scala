@@ -70,6 +70,10 @@ class ListingDAO @Inject() (
 ) (implicit ec: ExecutionContext) extends ListingTable {
   import profile.api._
 
+  protected def listingsByBusinessQuery(businessId: UUID) = for {
+    l <- listings if l.businessId === businessId
+  } yield l
+
   /**
     * Saves and returns the saved listing.
     */
@@ -111,4 +115,34 @@ class ListingDAO @Inject() (
       .map(_.slug)
       .result
   }
+
+  /**
+    * Fetch listings for a given business
+    */
+  def getByBusiness(businessId: UUID): Future[Seq[Listing]] = db.run {
+    listingsByBusinessQuery(businessId).result
+  } map { listings: Seq[DBListing] =>
+    listings.map(l => Listing(
+      id = l.id,
+      makeId = l.makeId,
+      modelId = l.modelId,
+      businessId = l.businessId,
+      title = l.title,
+      slug = l.slug,
+      description = l.description,
+      year = l.year,
+      kilometers = l.kilometers,
+      color = l.color,
+      bodyType = l.bodyType,
+      fuelType = l.fuelType,
+      transmissionType = l.transmissionType,
+      cylinders = l.cylinders,
+      engineSize = l.engineSize,
+      conditionType = l.conditionType,
+      features = l.features,
+      createdBy = l.createdBy,
+      createdAt = Some(l.createdAt)
+    ))
+  }
+
 }

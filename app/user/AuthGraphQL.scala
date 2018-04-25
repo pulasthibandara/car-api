@@ -1,7 +1,6 @@
 package user
 
-import com.google.inject.{Inject, Singleton}
-import models.SecureContext
+import _root_.models.SecureContext
 import com.mohiva.play.silhouette.api.exceptions.NotAuthorizedException
 import play.api.libs.json.Json
 import sangria.marshalling.playJson._
@@ -16,9 +15,7 @@ case class AuthProviderCredentials(firstName: String, lastName: String, email: S
 case class SignupData(credentials: Option[AuthProviderCredentials])
 
 
-
-@Singleton
-class AuthGarphQL @Inject() () extends AuthGraphQLImplicits  {
+object AuthGarphQL extends AuthGraphQLImplicits  {
 //  def queries(): List[Field[SecureContext, Unit]] = List(
 //    Field(
 //      "business",

@@ -21,7 +21,7 @@ class BusinessService @Inject() (
     */
   def getBusinessById(id: UUID): Future[Business] = {
     businessDAO.getById(id).map(_
-      .getOrElse(throw new BusinessNotFound(s"Business not found for the give id: ${id.toString}"))
+      .getOrElse(throw new BusinessNotFound(s"Business not found for the given id: ${id.toString}"))
     )
   }
 

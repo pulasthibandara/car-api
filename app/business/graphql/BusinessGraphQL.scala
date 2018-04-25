@@ -1,19 +1,19 @@
 package business.graphql
 
+import java.util.UUID
+
 import business.models.Business
-import com.google.inject.{Inject, Singleton}
 import models.{GraphQLAuthentication, RelayInterfaceTypes, SecureContext}
 import play.api.libs.json.Json
 import sangria.schema._
 import sangria.macros.derive._
 import sangria.marshalling.playJson._
-import sangria.relay.{Connection, Identifiable, Mutation, Node}
+import sangria.relay._
 import vehicle.VehicleGraphQLTypes
 
 import scala.concurrent.ExecutionContext
 
-@Singleton
-class BusinessGraphQL @Inject() (implicit ec: ExecutionContext) extends RelayInterfaceTypes
+object BusinessGraphQL extends RelayInterfaceTypes
   with BusinessGraphQLTypes {
 
   def mutations: List[Field[SecureContext, Unit]] = List(
@@ -27,6 +27,7 @@ class BusinessGraphQL @Inject() (implicit ec: ExecutionContext) extends RelayInt
       ),
       mutateAndGetPayload = {
         case (CreateBusinessInputType(b, clientMutationId), c) =>
+          import c.ctx.ec
           c.ctx.businessService.createBusiness(b.name, b.domain, b.subdomain, c.ctx.identity.get)
             .map(CreateBusinessPayload(_, clientMutationId))
       }
@@ -34,7 +35,10 @@ class BusinessGraphQL @Inject() (implicit ec: ExecutionContext) extends RelayInt
   )
 
   def queries: List[Field[SecureContext, Unit]] = List(
-
+    Field(
+      "business",
+      businessType,
+      resolve = _.ctx.businessService.getBusinessById(UUID.fromString("6988f7d4-4598-4ea9-88cd-0aab2749334f")))
   )
 
 }
@@ -44,13 +48,20 @@ trait BusinessGraphQLTypes extends VehicleGraphQLTypes {
     def id(b: Business) = b.id.toString
   }
 
-  implicit val businessType = deriveObjectType[Unit, Business](
+  implicit val businessType = deriveObjectType[SecureContext, Business](
     ObjectTypeDescription("This is the main entry point for the public facing graph"),
-    Interfaces[Unit, Business](nodeInterface.asInstanceOf[InterfaceType[Unit, Business]]),
-    ReplaceField[Unit, Business]("id", Node.globalIdField[Unit, Business]),
+    Interfaces[SecureContext, Business](nodeInterface.asInstanceOf[InterfaceType[SecureContext, Business]]),
+    ReplaceField[SecureContext, Business]("id", Node.globalIdField[SecureContext, Business]),
     AddFields(
       Field("listings", listingConnectionType, arguments = Connection.Args.All,
-        resolve = c => ???)
+        resolve = c => {
+          import c.ctx.ec
+
+          Connection.connectionFromFutureSeq(
+            c.ctx.listingService.listingsByBusinessId(c.value.id),
+            ConnectionArgs(c)
+          )
+        })
     )
   )
 
