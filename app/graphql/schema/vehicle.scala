@@ -1,17 +1,16 @@
-package vehicle
+package graphql.schema
 
 import java.util.UUID
 
-import sangria.schema._
+import _root_.models.RelayInterfaceTypes
+import graphql.middleware.GraphQLAuthentication
+import graphql.{RelayInterfaceTypes, SecureContext}
+import play.api.libs.json.Json
 import sangria.macros.derive._
 import sangria.relay.{Connection, ConnectionDefinition, Mutation, Node}
 import sangria.marshalling.playJson._
-import _root_.models.{GraphQLAuthentication, RelayInterfaceTypes, SecureContext}
-import com.google.inject.Inject
-import play.api.libs.json.Json
-import sangria.execution.deferred.Fetcher
-
-import scala.concurrent.ExecutionContext
+import sangria.schema._
+import vehicle._
 
 case class CreateListingArgs(
   id: Option[UUID],

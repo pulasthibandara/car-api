@@ -1,14 +1,11 @@
-package models
+package graphql
 
-import javax.inject.Singleton
-import business.graphql.BusinessGraphQL
 import business.services.BusinessService
-import com.google.inject.Inject
+import graphql.schema.{AuthGarphQL, BusinessGraphQL, VehicleGraphQL}
 import sangria.relay.{GlobalId, Identifiable, Node, NodeDefinition}
 import sangria.schema._
 import user._
 import vehicle.ListingService
-import vehicle.VehicleGraphQL
 
 import scala.concurrent.ExecutionContext
 

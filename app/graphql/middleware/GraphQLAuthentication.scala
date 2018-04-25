@@ -1,6 +1,7 @@
-package models
+package graphql.middleware
 
 import com.mohiva.play.silhouette.api.exceptions.NotAuthorizedException
+import graphql.SecureContext
 import sangria.execution._
 import sangria.schema.Context
 

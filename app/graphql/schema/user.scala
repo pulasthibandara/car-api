@@ -1,11 +1,9 @@
-package user
+package graphql.schema
 
-import _root_.models.SecureContext
-import com.mohiva.play.silhouette.api.exceptions.NotAuthorizedException
+import graphql.SecureContext
 import play.api.libs.json.Json
-import sangria.marshalling.playJson._
-import sangria.execution._
 import sangria.macros.derive._
+import sangria.marshalling.playJson._
 import sangria.schema._
 import user.User.UserType
 

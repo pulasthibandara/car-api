@@ -9,6 +9,9 @@ import sangria.marshalling.playJson._
 import sangria.execution._
 import _root_.models._
 import common.Concurrent._
+import graphql.middleware.GraphQLAuthentication
+import graphql.{GraphQLSchema, SecureContext}
+import graphql.schema.{AuthGraphQLImplicits, AuthProviderCredentials, SignupData}
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import sangria.schema.{ObjectType, Schema}
@@ -19,7 +22,7 @@ import vehicle.ListingService
 import scala.concurrent.ExecutionContext
 
 class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with Mockito with AuthGraphQLImplicits {
-  import GraphQLAuthentication._
+  import graphql.middleware.GraphQLAuthentication._
 
   sequential
 

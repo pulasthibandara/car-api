@@ -1,17 +1,16 @@
-package business.graphql
+package graphql.schema
 
 import java.util.UUID
 
 import business.models.Business
-import models.{GraphQLAuthentication, RelayInterfaceTypes, SecureContext}
+import graphql.middleware.GraphQLAuthentication
+import graphql.{RelayInterfaceTypes, SecureContext}
+import models.RelayInterfaceTypes
 import play.api.libs.json.Json
-import sangria.schema._
 import sangria.macros.derive._
-import sangria.marshalling.playJson._
 import sangria.relay._
-import vehicle.VehicleGraphQLTypes
-
-import scala.concurrent.ExecutionContext
+import sangria.schema._
+import sangria.marshalling.playJson._
 
 object BusinessGraphQL extends RelayInterfaceTypes
   with BusinessGraphQLTypes {

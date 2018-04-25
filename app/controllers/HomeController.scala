@@ -1,7 +1,6 @@
 package controllers
 
 import javax.inject._
-
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.actions.UserAwareRequest
 
@@ -14,8 +13,9 @@ import sangria.parser.QueryParser
 import sangria.ast.Document
 import sangria.execution._
 import sangria.marshalling.playJson._
-import GraphQLAuthentication.SecurityEnforcer
+import graphql.middleware.GraphQLAuthentication.SecurityEnforcer
 import business.services.BusinessService
+import graphql.{GraphQLSchema, SecureContext}
 import vehicle.ListingService
 
 import scala.concurrent.{ExecutionContext, Future}
