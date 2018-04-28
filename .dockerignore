@@ -1,0 +1,6 @@
+.git/
+logs/
+.idea/
+target/
+.buildkite/
+docker-compose.yml
