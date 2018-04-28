@@ -2,7 +2,6 @@ package graphql.schema
 
 import java.util.UUID
 
-import _root_.models.RelayInterfaceTypes
 import graphql.middleware.GraphQLAuthentication
 import graphql.{RelayInterfaceTypes, SecureContext}
 import play.api.libs.json.Json

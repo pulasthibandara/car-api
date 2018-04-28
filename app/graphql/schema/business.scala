@@ -5,7 +5,6 @@ import java.util.UUID
 import business.models.Business
 import graphql.middleware.GraphQLAuthentication
 import graphql.{RelayInterfaceTypes, SecureContext}
-import models.RelayInterfaceTypes
 import play.api.libs.json.Json
 import sangria.macros.derive._
 import sangria.relay._
