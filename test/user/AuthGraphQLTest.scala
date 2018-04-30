@@ -7,7 +7,6 @@ import play.api.libs.json._
 import sangria.macros._
 import sangria.marshalling.playJson._
 import sangria.execution._
-import _root_.models._
 import common.Concurrent._
 import graphql.middleware.GraphQLAuthentication
 import graphql.{GraphQLSchema, SecureContext}
@@ -43,7 +42,7 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     val listingService = mock[ListingService]
     val businessService = mock[BusinessService]
 
-    def secureContext = SecureContext(None, authService, listingService, businessService, ec)
+    def secureContext = SecureContext(None, None, authService, listingService, businessService, ec)
   }
 
   "signup a user" in new WithApplication with Injecting with DatabaseIsolation with WithSecureContext {

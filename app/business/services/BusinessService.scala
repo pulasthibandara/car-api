@@ -47,6 +47,12 @@ class BusinessService @Inject() (
       case Some(b) => throw new UserAlreadyHasBusiness(b)
     }
   }
+
+  def getBusinessByDomain(domain: String): Future[Option[Business]] =
+    businessDAO.getByDomain(domain)
+
+  def getBusinessBySubdomain(subdomain: String): Future[Option[Business]] =
+    businessDAO.getBySubdomain(Some(subdomain))
 }
 
 case class BusinessNotFound(message: String) extends Exception(message)

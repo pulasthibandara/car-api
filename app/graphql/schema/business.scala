@@ -4,6 +4,7 @@ import java.util.UUID
 
 import business.models.Business
 import graphql.middleware.GraphQLAuthentication
+import graphql.schema.VehicleGraphQL.UUIDType
 import graphql.{RelayInterfaceTypes, SecureContext}
 import play.api.libs.json.Json
 import sangria.macros.derive._
@@ -13,6 +14,8 @@ import sangria.marshalling.playJson._
 
 object BusinessGraphQL extends RelayInterfaceTypes
   with BusinessGraphQLTypes {
+
+  val businessId = Argument("businessId", OptionInputType(UUIDType))
 
   def mutations: List[Field[SecureContext, Unit]] = List(
     Mutation.fieldWithClientMutationId[SecureContext, Unit, CreateBusinessPayload, CreateBusinessInputType](
@@ -36,7 +39,11 @@ object BusinessGraphQL extends RelayInterfaceTypes
     Field(
       "business",
       businessType,
-      resolve = _.ctx.businessService.getBusinessById(UUID.fromString("6988f7d4-4598-4ea9-88cd-0aab2749334f")))
+      arguments = businessId :: Nil,
+      resolve = c => c.ctx
+        .businessService
+        .getBusinessById(c.arg(businessId)
+          .getOrElse(c.ctx.business.get.id)))
   )
 
 }

@@ -15,6 +15,7 @@ import sangria.execution._
 import sangria.marshalling.playJson._
 import graphql.middleware.GraphQLAuthentication.SecurityEnforcer
 import business.services.BusinessService
+import graphql.filters.BusinessFilter
 import graphql.{GraphQLSchema, SecureContext}
 import vehicle.ListingService
 
@@ -68,6 +69,7 @@ class HomeController @Inject()(
       query,
       SecureContext(
         identity = request.identity,
+        business = request.attrs.get(BusinessFilter.businessKey),
         authService = authService,
         listingService = listingService,
         businessService = businessService,

@@ -1,5 +1,6 @@
 package graphql
 
+import business.models.Business
 import business.services.BusinessService
 import graphql.schema.{AuthGarphQL, BusinessGraphQL, VehicleGraphQL}
 import sangria.relay.{GlobalId, Identifiable, Node, NodeDefinition}
@@ -11,6 +12,7 @@ import scala.concurrent.ExecutionContext
 
 case class SecureContext(
   identity: Option[User],
+  business: Option[Business],
   authService: AuthService,
   listingService: ListingService,
   businessService: BusinessService,
