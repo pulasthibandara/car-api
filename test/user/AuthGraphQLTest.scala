@@ -16,7 +16,7 @@ import org.specs2.specification.Scope
 import sangria.schema.{ObjectType, Schema}
 import sangria.schema._
 import testhelpers.{DatabaseIsolation, WithDataEvolutions}
-import vehicle.ListingService
+import vehicle.services.{ListingService, TaxonomyService}
 
 import scala.concurrent.ExecutionContext
 
@@ -41,8 +41,9 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
     val authService = mock[AuthService]
     val listingService = mock[ListingService]
     val businessService = mock[BusinessService]
+    val taxonomyService = mock[TaxonomyService]
 
-    def secureContext = SecureContext(None, None, authService, listingService, businessService, ec)
+    def secureContext = SecureContext(None, None, authService, listingService, businessService, taxonomyService, ec)
   }
 
   "signup a user" in new WithApplication with Injecting with DatabaseIsolation with WithSecureContext {

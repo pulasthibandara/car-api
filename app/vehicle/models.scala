@@ -32,34 +32,11 @@ case class Listing(
   createdAt: Option[Instant]
 )
 
-case class Model(id: UUID, name: String, slug: String, make: Make)
+case class Model(id: UUID, name: String, slug: String, makeId: UUID, make: Option[Make])
 
-case class Make(id: UUID, name: String, slug: String)
+case class Make(id: UUID, name: String, slug: String, models: Option[Seq[Model]] = None)
 
-trait LowPriorityVehicleGraphQLImplicits extends CommonGraphQLScalarTypes {
-  implicit lazy val BodyTypeType = deriveEnumType[BodyType.Value]()
-  implicit lazy val FuelTypeType = deriveEnumType[FuelType.Value]()
-  implicit lazy val TransmissionTypeType = deriveEnumType[TransmissionType.Value]()
-  implicit lazy val ConditionTypeType = deriveEnumType[ConditionType.Value]()
 
-  implicit lazy val bodyTypeReads = Reads.enumNameReads(BodyType)
-  implicit lazy val fuelTypeReads = Reads.enumNameReads(FuelType)
-  implicit lazy val transmissionTypeReads = Reads.enumNameReads(TransmissionType)
-  implicit lazy val conditionTypeReads = Reads.enumNameReads(ConditionType)
-
-  implicit object ListingIdentifiable extends Identifiable[Listing] {
-    def id(listing: Listing) = listing.id.toString
-  }
-
-  implicit object MakeIdentifiable extends Identifiable[Make] {
-    def id(make: Make) = make.id.toString
-  }
-
-  implicit object ModelIdentifiable extends Identifiable[Model] {
-    def id(model: Model) = model.id.toString
-  }
-
-}
 
 object FuelType extends Enumeration {
   val Petrol, Diesel, Hybrid, Electric = Value

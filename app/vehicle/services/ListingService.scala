@@ -1,11 +1,12 @@
-package vehicle
+package vehicle.services
 
 import java.util.UUID
 
 import com.google.inject.Inject
-import vehicle.daos.{ListingDAO, ModelDAO}
 import common.Sluggify
-import Sluggify.StringOps._
+import common.Sluggify.StringOps._
+import vehicle._
+import vehicle.daos.{ListingDAO, ModelDAO}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,7 +42,7 @@ class ListingService @Inject() (
 
       _id = id.getOrElse(UUID.randomUUID)
 
-      listing = Listing(_id, model.make.id, model.id, businessId, title, slug, description, year, kilometers,
+      listing = Listing(_id, model.make.get.id, model.id, businessId, title, slug, description, year, kilometers,
         color, bodyType, fuelType, transmissionType, cylinders, engineSize, conditionType, features, userId, None)
 
       // save the new listing

@@ -1,6 +1,6 @@
 package graphql.schema
 
-import graphql.SecureContext
+import graphql.{GraphQLSchema, SecureContext}
 import play.api.libs.json.Json
 import sangria.macros.derive._
 import sangria.marshalling.playJson._
@@ -13,7 +13,7 @@ case class AuthProviderCredentials(firstName: String, lastName: String, email: S
 case class SignupData(credentials: Option[AuthProviderCredentials])
 
 
-object AuthGarphQL extends AuthGraphQLImplicits  {
+trait AuthGarphQL extends AuthGraphQLImplicits  { this: GraphQLSchema =>
 //  def queries(): List[Field[SecureContext, Unit]] = List(
 //    Field(
 //      "business",
@@ -21,7 +21,7 @@ object AuthGarphQL extends AuthGraphQLImplicits  {
 //    )
 //  )
 
-  def mutations(): List[Field[SecureContext, Unit]] = List(
+  def mutations: List[Field[SecureContext, Unit]] = List(
     Field(
       "signUp",
       UserType,

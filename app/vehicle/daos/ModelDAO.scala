@@ -72,6 +72,11 @@ class ModelDAO @Inject() (
     .on(_.makeId === _.id)
     .take(1)
 
+  protected def makesAndModelsQuery() = for {
+    make <- makes
+    model <- models if model.makeId === make.id
+  } yield (make, model)
+
   /**
     * Get model and make by model Id.
     */
@@ -81,13 +86,42 @@ class ModelDAO @Inject() (
         id = model.id,
         name = model.name,
         slug = model.slug,
-        make = Make(
+        makeId = make.id,
+        make = Some(Make(
           id = make.id,
           name = make.name,
           slug = make.slug
-        )
+        ))
       )
     })
+
+  def getModels(ids: Seq[UUID]): Future[Seq[Model]] = db.run {
+    models.filter(_.id.inSet(ids)).result
+  }.map(_.map(m => Model(
+    id = m.id,
+    name = m.name,
+    slug = m.slug,
+    makeId = m.makeId,
+    make = None
+  )))
+
+  def getAllMakes(): Future[Seq[Make]] = db.run {
+    makes.result
+  } map(_.map(m => Make(
+    id = m.id,
+    name = m.name,
+    slug = m.slug
+  )))
+
+  def getModelsByMakeIds(ids: Seq[UUID]): Future[Seq[Model]] = db.run {
+    models.filter(_.makeId.inSet(ids)).result
+  } map(_.map(m => Model(
+    id = m.id,
+    name = m.name,
+    slug = m.slug,
+    makeId = m.makeId,
+    make = None
+  )))
 
   /**
     * Insert user model mapping if not exist
@@ -95,5 +129,6 @@ class ModelDAO @Inject() (
   def upsertUserModelMapping(modelId: UUID, businessId: UUID) = db.run {
     userModels.insertOrUpdate(modelId, businessId)
   }
+
 }
 

@@ -17,7 +17,7 @@ import graphql.middleware.GraphQLAuthentication.SecurityEnforcer
 import business.services.BusinessService
 import graphql.filters.BusinessFilter
 import graphql.{GraphQLSchema, SecureContext}
-import vehicle.ListingService
+import vehicle.services.{ListingService, TaxonomyService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,7 +31,8 @@ class HomeController @Inject()(
   silhouette: Silhouette[DefaultEnv],
   authService: AuthService,
   listingService: ListingService,
-  businessService: BusinessService
+  businessService: BusinessService,
+  taxonomyService: TaxonomyService,
 )(implicit exec: ExecutionContext) extends AbstractController(cc) {
 
   /**
@@ -73,6 +74,7 @@ class HomeController @Inject()(
         authService = authService,
         listingService = listingService,
         businessService = businessService,
+        taxonomyService = taxonomyService,
         ec = exec
       ),
       variables = vars,

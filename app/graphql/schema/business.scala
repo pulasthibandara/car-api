@@ -4,16 +4,15 @@ import java.util.UUID
 
 import business.models.Business
 import graphql.middleware.GraphQLAuthentication
-import graphql.schema.VehicleGraphQL.UUIDType
-import graphql.{RelayInterfaceTypes, SecureContext}
+import graphql.{GraphQLSchema, RelayInterfaceTypes, SecureContext}
 import play.api.libs.json.Json
 import sangria.macros.derive._
 import sangria.relay._
 import sangria.schema._
 import sangria.marshalling.playJson._
 
-object BusinessGraphQL extends RelayInterfaceTypes
-  with BusinessGraphQLTypes {
+trait BusinessGraphQL extends RelayInterfaceTypes
+  with BusinessGraphQLTypes { this: GraphQLSchema =>
 
   val businessId = Argument("businessId", OptionInputType(UUIDType))
 
