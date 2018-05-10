@@ -10,7 +10,7 @@ import sangria.execution._
 import common.Concurrent._
 import graphql.middleware.GraphQLAuthentication
 import graphql.{GraphQLSchema, SecureContext}
-import graphql.schema.{AuthGraphQLImplicits, AuthProviderCredentials, SignupData}
+import graphql.schema.{AuthGraphQLImplicits, AuthProviderCredentials, SignUpDataInputType}
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import sangria.schema.{ObjectType, Schema}
@@ -61,7 +61,7 @@ class AuthGraphQLTest(implicit ec: ExecutionContext) extends Specification with 
         }
         """
 
-    val signupData= SignupData(Some(AuthProviderCredentials(
+    val signupData= SignupDataInputType(Some(AuthProviderCredentials(
       firstName = "pulasthi",
       lastName = "bandara",
       email = "pulasthi1989@gmail.com",

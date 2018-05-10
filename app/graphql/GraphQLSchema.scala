@@ -2,7 +2,7 @@ package graphql
 
 import business.models.Business
 import business.services.BusinessService
-import graphql.schema.{AuthGarphQL, BusinessGraphQL, MetaGraphql, VehicleGraphQL}
+import graphql.schema.{AuthGraphQL, BusinessGraphQL, MetaGraphql, VehicleGraphQL}
 import sangria.execution.deferred.{DeferredResolver, Fetcher}
 import sangria.relay.{GlobalId, Identifiable, Node, NodeDefinition}
 import sangria.schema._
@@ -51,7 +51,7 @@ trait GraphQLSchema extends
   VehicleGraphQL with
   MetaGraphql with
   BusinessGraphQL with
-  AuthGarphQL {
+  AuthGraphQL {
 
   override def queries: List[Field[SecureContext, Unit]] =
     super[MetaGraphql].queries ++
@@ -63,7 +63,7 @@ trait GraphQLSchema extends
   )
 
   override def mutations: List[Field[SecureContext, Unit]] =
-    super[AuthGarphQL].mutations ++
+    super[AuthGraphQL].mutations ++
     super[VehicleGraphQL].mutations ++
     super[BusinessGraphQL].mutations
 
