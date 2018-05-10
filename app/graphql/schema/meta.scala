@@ -15,7 +15,8 @@ import sangria.marshalling.playJson._
 import vehicle._
 
 trait MetaGraphql extends RelayInterfaceTypes
-  with MetaGraphQLTypes { this: GraphQLSchema =>
+  with MetaGraphQLTypes
+  with MetaFetchers { this: GraphQLSchema =>
 
   def queries: List[Field[SecureContext, Unit]] = List(
     Field(
@@ -29,17 +30,22 @@ trait MetaGraphql extends RelayInterfaceTypes
       )
     )
   )
-
 }
 
-trait MetaRelationTypes {
-  val modelMake = Relation[Model, UUID]("model-make", model => Seq(model.makeId))
-  val makeModel = Relation[Make, UUID]("make-model", make => make.models.get.map(_.id))
+trait MetaFetchers {
+  val modelToMake = Relation[Model, UUID]("model-make", model => Seq(model.makeId))
 
-//  val modelFetcher = Fetcher.rel[SecureContext, Model, Make, UUID](
-//    (ctx, ids) => ctx.taxonomyService.getModelsByIds(ids),
-//    (ctx, relIds) => ctx.taxonomyService.getModelsByMakes(relIds.get(makeModel).get)
-//  )
+  val modelFetcher = Fetcher[SecureContext, Model, UUID](
+    (ctx, ids) => ctx.taxonomyService.getModelsByIds(ids)
+  )
+
+  val modelsByMakeIdsFetcher = Fetcher.relOnly[SecureContext, Model, Model, UUID](
+    (ctx, makes) => ctx.taxonomyService.getModelsByMakes(makes(modelToMake))
+  )
+
+  val makeFetcher = Fetcher[SecureContext, Make, UUID](
+    (ctx, ids) => ctx.taxonomyService.getMakesByIds(ids)
+  )
 }
 
 trait MetaGraphQLTypes extends LowPriorityVehicleGraphQLImplicits { this: GraphQLSchema =>

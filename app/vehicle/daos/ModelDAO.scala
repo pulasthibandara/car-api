@@ -105,6 +105,14 @@ class ModelDAO @Inject() (
     make = None
   )))
 
+  def getMakes(ids: Seq[UUID]): Future[Seq[Make]] = db.run {
+    makes.filter(_.id.inSet(ids)).result
+  }.map(_.map(m => Make(
+    id = m.id,
+    name = m.name,
+    slug = m.slug
+  )))
+
   def getAllMakes(): Future[Seq[Make]] = db.run {
     makes.result
   } map(_.map(m => Make(

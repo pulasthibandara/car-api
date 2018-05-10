@@ -3,6 +3,7 @@ package graphql
 import business.models.Business
 import business.services.BusinessService
 import graphql.schema.{AuthGarphQL, BusinessGraphQL, MetaGraphql, VehicleGraphQL}
+import sangria.execution.deferred.{DeferredResolver, Fetcher}
 import sangria.relay.{GlobalId, Identifiable, Node, NodeDefinition}
 import sangria.schema._
 import user._
@@ -70,6 +71,9 @@ trait GraphQLSchema extends
     "Mutation",
     fields[SecureContext, Unit](mutations: _*)
   )
+
+  val deferredResolvers: DeferredResolver[SecureContext] =
+    DeferredResolver.fetchers(modelFetcher, makeFetcher, modelsByMakeIdsFetcher)
 
   val SchemaDefinition = Schema(QueryType, Some(MutationType))
 }

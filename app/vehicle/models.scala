@@ -7,6 +7,7 @@ import common.CommonGraphQLScalarTypes
 import common.database.PgSlickProfile
 import play.api.db.slick.HasDatabaseConfigProvider
 import play.api.libs.json.Reads
+import sangria.execution.deferred.HasId
 import sangria.macros.derive._
 import sangria.relay._
 
@@ -34,9 +35,15 @@ case class Listing(
 
 case class Model(id: UUID, name: String, slug: String, makeId: UUID, make: Option[Make])
 
+object Model {
+  implicit val modelHasId: HasId[Model, UUID] = HasId(_.id)
+}
+
 case class Make(id: UUID, name: String, slug: String, models: Option[Seq[Model]] = None)
 
-
+object Make {
+  implicit val makeHasId: HasId[Make, UUID] = HasId(_.id)
+}
 
 object FuelType extends Enumeration {
   val Petrol, Diesel, Hybrid, Electric = Value

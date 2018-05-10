@@ -14,6 +14,9 @@ class TaxonomyService @Inject() (
 ) (implicit ec: ExecutionContext) {
   def getAllMakes: Future[Seq[Make]]  = modelDAO.getAllMakes
 
+  def getMakesByIds(ids: Seq[UUID]): Future[scala.Seq[Make]] =
+    modelDAO.getMakes(ids)
+
   def getModelsByIds(ids: Seq[UUID]): Future[Seq[Model]] =
     modelDAO.getModels(ids)
 

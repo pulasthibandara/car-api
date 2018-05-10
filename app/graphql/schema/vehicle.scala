@@ -82,16 +82,18 @@ trait VehicleGraphQLImplicits extends VehicleGraphQLTypes {
   implicit val CreateListingArgsInputType: InputObjectType[CreateListingArgs] = deriveInputObjectType[CreateListingArgs]()
 }
 
-trait VehicleGraphQLTypes extends LowPriorityVehicleGraphQLImplicits with RelayInterfaceTypes {
+trait VehicleGraphQLTypes extends LowPriorityVehicleGraphQLImplicits with RelayInterfaceTypes with MetaFetchers {
   implicit lazy val MakeType: ObjectType[SecureContext, Make] = deriveObjectType[SecureContext, Make](
     ReplaceField[SecureContext, Make]("id", Node.globalIdField[SecureContext, Make]),
     ReplaceField[SecureContext, Make]("models", Field("models", modelConnectionType, arguments = Connection.Args.All,
       resolve = c => {
         import c.ctx.ec
 
-        Connection.connectionFromFutureSeq(
-          c.ctx.taxonomyService.getModelsByMakes(List(c.value.id)),
-          ConnectionArgs(c)
+        DeferredValue(modelsByMakeIdsFetcher.deferRelSeq(modelToMake, c.value.id)).map(models =>
+          Connection.connectionFromSeq(
+            models,
+            ConnectionArgs(c)
+          )
         )
       }
     )),

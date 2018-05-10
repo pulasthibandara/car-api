@@ -79,7 +79,8 @@ class HomeController @Inject()(
       ),
       variables = vars,
       operationName = operation,
-      middleware = SecurityEnforcer :: Nil
+      middleware = SecurityEnforcer :: Nil,
+      deferredResolver = GraphQLSchema.deferredResolvers
     ).map(Ok(_))
       .recover {
         case error: QueryAnalysisError ⇒ BadRequest(error.resolveError)
