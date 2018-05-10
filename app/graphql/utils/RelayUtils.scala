@@ -1,16 +1,11 @@
 package graphql.utils
 
 import graphql.SecureContext
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json._
 import sangria.execution.FieldTag
-import sangria.marshalling.FromInput
-import sangria.marshalling.FromInput.InputObjectResult
 import sangria.marshalling.playJson._
-import sangria.relay.{Mutation, MutationLike}
-import sangria.schema.{Action, Args, Context, Field, InputField, InputObjectType, InputType, OutputType, ValidOutType, fields}
-import sangria.util.tag.@@
-
-import scala.reflect.ClassTag
+import sangria.relay.Mutation
+import sangria.schema._
 
 object RelayUtils {
   case class RelayResult[T](clientMutationId: Option[String], payload: T) extends Mutation
@@ -19,6 +14,15 @@ object RelayUtils {
   object RelayInput {
     implicit def jsonFormats[T](implicit ft: Format[T]): OFormat[RelayInput[T]] =
       Json.format[RelayInput[T]]
+  }
+
+  implicit def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]]{
+    override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
+
+    override def writes(o: Option[T]): JsValue = o match {
+      case Some(t) ⇒ implicitly[Writes[T]].writes(t)
+      case None ⇒ JsNull
+    }
   }
 
   def createSimpleMutation[Val, Input, Res, Out](

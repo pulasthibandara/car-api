@@ -1,12 +1,15 @@
 package graphql.schema
 
 import graphql.{GraphQLSchema, SecureContext}
-import graphql.utils.RelayUtils
+import graphql.utils.RelayUtils._
 import play.api.libs.json._
 import sangria.macros.derive._
+import sangria.marshalling.FromInput
+import sangria.marshalling.FromInput.InputObjectResult
 import sangria.marshalling.playJson._
 import sangria.relay.Mutation
 import sangria.schema._
+import sangria.util.tag.@@
 import user.User
 import user.User.UserType
 
@@ -20,7 +23,7 @@ case class LoginInput(email: String, password: String)
 trait AuthGraphQL extends AuthGraphQLImplicits  { this: GraphQLSchema =>
 
   def mutations: List[Field[SecureContext, Unit]] = List(
-    RelayUtils.createSimpleMutation(
+    createSimpleMutation(
       "signUp",
       UserType,
       OptionInputType(AuthProviderCredentialsInputType),
@@ -30,7 +33,7 @@ trait AuthGraphQL extends AuthGraphQLImplicits  { this: GraphQLSchema =>
         case _ => throw new Exception ("Provider not configured.")
       }
     ),
-    RelayUtils.createSimpleMutation(
+    createSimpleMutation(
       "login",
       StringType,
       loginInputType,
@@ -47,15 +50,6 @@ trait AuthGraphQLImplicits {
     deriveInputObjectType[AuthProviderCredentials]()
   implicit val loginInputType: InputObjectType[LoginInput] =
     deriveInputObjectType[LoginInput]()
-
-  implicit def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]]{
-    override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
-
-    override def writes(o: Option[T]): JsValue = o match {
-      case Some(t) ⇒ implicitly[Writes[T]].writes(t)
-      case None ⇒ JsNull
-    }
-  }
 }
 
 trait AuthGraphQLTypes {
