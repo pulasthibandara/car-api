@@ -3,7 +3,9 @@ package graphql
 import business.models.Business
 import business.services.BusinessService
 import graphql.schema.{AuthGraphQL, BusinessGraphQL, MetaGraphql, VehicleGraphQL}
-import sangria.execution.deferred.{DeferredResolver, Fetcher}
+import play.api.libs.Files.TemporaryFile
+import play.api.mvc.MultipartFormData.FilePart
+import sangria.execution.deferred.DeferredResolver
 import sangria.relay.{GlobalId, Identifiable, Node, NodeDefinition}
 import sangria.schema._
 import user._
@@ -18,6 +20,7 @@ case class SecureContext(
   listingService: ListingService,
   businessService: BusinessService,
   taxonomyService: TaxonomyService,
+  files: Seq[FilePart[TemporaryFile]],
   implicit val ec: ExecutionContext
 )
 

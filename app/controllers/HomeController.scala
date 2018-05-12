@@ -16,6 +16,8 @@ import graphql.middleware.GraphQLAuthentication.SecurityEnforcer
 import business.services.BusinessService
 import graphql.filters.BusinessFilter
 import graphql.{GraphQLSchema, SecureContext}
+import play.api.libs.Files.TemporaryFile
+import play.api.mvc.MultipartFormData.FilePart
 import vehicle.services.{ListingService, TaxonomyService}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,7 +50,14 @@ class HomeController @Inject()(
     Ok(views.html.graphiql())
   }
 
-  case class GraphQLRequest(query: String, variables: JsObject = Json.obj(), operationName: Option[String])
+  case class GraphQLRequest(
+    query: String,
+    variables: JsObject = Json.obj(),
+    operationName: Option[String],
+    files: Seq[FilePart[TemporaryFile]] = Nil
+  )
+
+  implicit val fileJsonReads: Reads[Seq[FilePart[TemporaryFile]]] = (_: JsValue) => JsSuccess(Nil)
 
   implicit val graphQLRequestReeds: Reads[GraphQLRequest] = Json.using[Json.WithDefaultValues].reads[GraphQLRequest]
 
@@ -59,7 +68,8 @@ class HomeController @Inject()(
         variables = r.dataParts.get("variables").map { s =>
           Json.parse(s.head).validate[JsObject].get
         } getOrElse (Json.obj()),
-        operationName = r.dataParts.get("operationName").map(_.head)
+        operationName = r.dataParts.get("operationName").map(_.head),
+        files = r.files
       ))
     } else {
       parse.json[GraphQLRequest]
@@ -67,16 +77,16 @@ class HomeController @Inject()(
   }
 
   def graphQL = silhouette.UserAwareAction.async(jsonOrMultipartParser) { implicit request =>
-    val GraphQLRequest(query, variables, operationName) = request.body
+    val GraphQLRequest(query, variables, operationName, files) = request.body
     QueryParser.parse(query) match {
       case Success(queryAst) =>
-        executeGraphQL(queryAst, operationName, variables)
+        executeGraphQL(queryAst, operationName, variables, files)
       case Failure(error) =>
         Future.successful(Ok("error :("))
     }
   }
 
-  private def executeGraphQL(query: Document, operation: Option[String], vars: JsObject)
+  private def executeGraphQL(query: Document, operation: Option[String], vars: JsObject, files: Seq[FilePart[TemporaryFile]])
     (implicit request: UserAwareRequest[DefaultEnv, GraphQLRequest]) = {
     Executor.execute(
       GraphQLSchema.SchemaDefinition,
@@ -88,6 +98,7 @@ class HomeController @Inject()(
         listingService = listingService,
         businessService = businessService,
         taxonomyService = taxonomyService,
+        files = files,
         ec = exec
       ),
       variables = vars,
