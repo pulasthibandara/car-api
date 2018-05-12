@@ -7,7 +7,6 @@ import com.mohiva.play.silhouette.api.actions.UserAwareRequest
 import scala.util.{Failure, Success}
 import play.api.mvc._
 import play.api.libs.json._
-import models._
 import user.{AuthService, DefaultEnv}
 import sangria.parser.QueryParser
 import sangria.ast.Document
@@ -53,7 +52,21 @@ class HomeController @Inject()(
 
   implicit val graphQLRequestReeds: Reads[GraphQLRequest] = Json.using[Json.WithDefaultValues].reads[GraphQLRequest]
 
-  def graphQL = silhouette.UserAwareAction.async(parse.json[GraphQLRequest]) { implicit request =>
+  val jsonOrMultipartParser: BodyParser[GraphQLRequest] = parse.using { request =>
+    if(request.contentType.getOrElse("") == "multipart/form-data") {
+      parse.multipartFormData.map(r => GraphQLRequest(
+        query = r.dataParts("query").head,
+        variables = r.dataParts.get("variables").map { s =>
+          Json.parse(s.head).validate[JsObject].get
+        } getOrElse (Json.obj()),
+        operationName = r.dataParts.get("operationName").map(_.head)
+      ))
+    } else {
+      parse.json[GraphQLRequest]
+    }
+  }
+
+  def graphQL = silhouette.UserAwareAction.async(jsonOrMultipartParser) { implicit request =>
     val GraphQLRequest(query, variables, operationName) = request.body
     QueryParser.parse(query) match {
       case Success(queryAst) =>
