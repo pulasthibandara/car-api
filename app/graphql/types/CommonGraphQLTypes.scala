@@ -1,4 +1,4 @@
-package common
+package graphql.types
 
 import java.time.Instant
 import java.util.UUID
@@ -18,13 +18,13 @@ trait CommonGraphQLScalarTypes {
     case Failure(_) => Left(DateTimeCoerceViolation)
   }
 
-  implicit val UUIDType = ScalarAlias[UUID, String](StringType,
+  implicit val UUIDType: ScalarAlias[UUID, String] = ScalarAlias[UUID, String](StringType,
     toScalar = _.toString,
     fromScalar = idString ⇒ try Right(UUID.fromString(idString)) catch {
       case _: IllegalArgumentException ⇒ Left(IDViolation)
     })
 
-  implicit val DateTimeType = ScalarType[Instant]("DateTime",
+  implicit val DateTimeType: ScalarType[Instant] = ScalarType[Instant]("DateTime",
     coerceUserInput = {
       case s: String => parseDateTime(s)
       case _ => Left(DateTimeCoerceViolation)

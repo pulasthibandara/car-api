@@ -2,8 +2,8 @@ package graphql.schema
 
 import java.util.UUID
 
-import common.CommonGraphQLScalarTypes
 import graphql.middleware.GraphQLAuthentication
+import graphql.types.CommonGraphQLScalarTypes
 import graphql.{RelayInterfaceTypes, SecureContext}
 import play.api.libs.json.{Json, Reads}
 import sangria.macros.derive._

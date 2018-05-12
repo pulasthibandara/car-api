@@ -3,13 +3,9 @@ package vehicle
 import java.time.Instant
 import java.util.UUID
 
-import common.CommonGraphQLScalarTypes
 import common.database.PgSlickProfile
 import play.api.db.slick.HasDatabaseConfigProvider
-import play.api.libs.json.Reads
 import sangria.execution.deferred.HasId
-import sangria.macros.derive._
-import sangria.relay._
 
 case class Listing(
   id: UUID,

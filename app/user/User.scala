@@ -4,7 +4,7 @@ import java.time.Instant
 import java.util.UUID
 
 import com.mohiva.play.silhouette.api.{Identity, LoginInfo}
-import common.CommonGraphQLScalarTypes
+import graphql.types.CommonGraphQLScalarTypes
 import sangria.ast
 import sangria.macros.derive._
 import sangria.schema.ScalarType
