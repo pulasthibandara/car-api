@@ -15,6 +15,7 @@ import sangria.marshalling.playJson._
 import graphql.middleware.GraphQLAuthentication.SecurityEnforcer
 import business.services.BusinessService
 import graphql.filters.BusinessFilter
+import graphql.middleware.FileUploadMiddleware
 import graphql.{GraphQLSchema, SecureContext}
 import play.api.libs.Files.TemporaryFile
 import play.api.mvc.MultipartFormData.FilePart
@@ -103,7 +104,7 @@ class HomeController @Inject()(
       ),
       variables = vars,
       operationName = operation,
-      middleware = SecurityEnforcer :: Nil,
+      middleware = SecurityEnforcer :: FileUploadMiddleware :: Nil,
       deferredResolver = GraphQLSchema.deferredResolvers
     ).map(Ok(_))
       .recover {
