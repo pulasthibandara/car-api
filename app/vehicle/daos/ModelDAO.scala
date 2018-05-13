@@ -5,7 +5,7 @@ import java.util.UUID
 import javax.inject.Singleton
 
 import com.google.inject.Inject
-import common.database.PgSlickProfile
+import core.database.PgSlickProfile
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import vehicle.{Make, Model}
 

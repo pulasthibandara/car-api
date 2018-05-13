@@ -1,4 +1,4 @@
-package common.akka
+package core.akka
 
 import java.time.Instant
 import java.util.UUID

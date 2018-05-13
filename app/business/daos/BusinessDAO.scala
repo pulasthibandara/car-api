@@ -5,7 +5,7 @@ import java.util.UUID
 
 import business.models.Business
 import com.google.inject.Inject
-import common.database.PgSlickProfile
+import core.database.PgSlickProfile
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 
 import scala.concurrent.{ExecutionContext, Future}

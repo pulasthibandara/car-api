@@ -1,4 +1,4 @@
-package common.akka
+package core.akka
 
 import akka.actor.{ ActorLogging, Actor, ActorContext }
 

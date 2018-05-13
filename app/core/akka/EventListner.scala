@@ -1,9 +1,9 @@
-package common.akka
+package core.akka
 
 import scala.concurrent.ExecutionContext
 
 abstract class EventListener(tags: Class[_]*)(implicit ec: ExecutionContext)
-  extends RestartableActor with common.Logger {
+  extends RestartableActor with core.Logger {
 
   @throws[Exception](classOf[Exception])
   override def preStart(): Unit = {

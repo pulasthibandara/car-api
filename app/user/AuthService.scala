@@ -8,7 +8,7 @@ import com.mohiva.play.silhouette.api.{LoginInfo, Silhouette}
 import com.mohiva.play.silhouette.api.util.{Credentials, PasswordHasherRegistry}
 import com.mohiva.play.silhouette.impl.exceptions.IdentityNotFoundException
 import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
-import common.UUIDImplitits
+import core.UUIDImplitits
 import user.models.UserCreated
 
 import scala.concurrent.{ExecutionContext, Future}

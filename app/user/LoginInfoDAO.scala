@@ -3,8 +3,8 @@ package user
 import java.time.Instant
 
 import com.mohiva.play.silhouette.api.LoginInfo
-import common.MappedDBTypes
-import common.database.PgSlickProfile
+import core.MappedDBTypes
+import core.database.PgSlickProfile
 import play.api.db.slick.HasDatabaseConfigProvider
 
 case class DBLoginInfo(

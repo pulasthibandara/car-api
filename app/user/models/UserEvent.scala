@@ -1,5 +1,5 @@
 package user.models
 
-import common.akka.BaseEvent
+import core.akka.BaseEvent
 
 trait UserEvent extends BaseEvent

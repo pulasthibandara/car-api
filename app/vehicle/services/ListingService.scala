@@ -3,8 +3,8 @@ package vehicle.services
 import java.util.UUID
 
 import com.google.inject.Inject
-import common.Sluggify
-import common.Sluggify.StringOps._
+import core.Sluggify
+import core.Sluggify.StringOps._
 import vehicle._
 import vehicle.daos.{ListingDAO, ModelDAO}
 

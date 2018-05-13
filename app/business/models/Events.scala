@@ -1,6 +1,6 @@
 package business.models
 
-import common.akka.BaseEvent
+import core.akka.BaseEvent
 import user.User
 
 trait BusinessEvent extends BaseEvent

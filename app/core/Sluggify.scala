@@ -1,4 +1,4 @@
-package common
+package core
 
 object Sluggify {
   def apply(input:String) = slugify(input)

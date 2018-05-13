@@ -2,7 +2,7 @@ package business.events
 
 
 import com.google.inject.Inject
-import common.akka.EventListener
+import core.akka.EventListener
 import user.models.UserEvent
 
 import scala.concurrent.ExecutionContext

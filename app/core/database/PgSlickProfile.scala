@@ -1,4 +1,4 @@
-package common.database
+package core.database
 
 import com.github.tminglei.slickpg._
 import play.api.libs.json._

@@ -3,7 +3,7 @@ package vehicle
 import java.time.Instant
 import java.util.UUID
 
-import common.database.PgSlickProfile
+import core.database.PgSlickProfile
 import play.api.db.slick.HasDatabaseConfigProvider
 import sangria.execution.deferred.HasId
 

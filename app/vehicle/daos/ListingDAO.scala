@@ -4,8 +4,8 @@ import java.time.Instant
 import java.util.UUID
 
 import com.google.inject.{Inject, Singleton}
-import common.MappedDBTypes
-import common.database.PgSlickProfile
+import core.MappedDBTypes
+import core.database.PgSlickProfile
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import vehicle._
 

@@ -6,8 +6,8 @@ import java.util.UUID.randomUUID
 import javax.inject.{Inject, Singleton}
 
 import com.mohiva.play.silhouette.api.LoginInfo
-import common.MappedDBTypes
-import common.database.PgSlickProfile
+import core.MappedDBTypes
+import core.database.PgSlickProfile
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 
 import scala.concurrent.{ExecutionContext, Future}

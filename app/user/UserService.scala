@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 import business.models.Business
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.services.IdentityService
-import common.UUIDImplitits
+import core.UUIDImplitits
 
 import scala.concurrent.{ExecutionContext, Future}
 

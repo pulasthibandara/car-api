@@ -1,9 +1,9 @@
-package common
+package core
 
 import java.sql.Timestamp
 import java.time.Instant
 
-import common.database.PgSlickProfile
+import core.database.PgSlickProfile
 import play.api.db.slick.HasDatabaseConfigProvider
 
 trait MappedDBTypes extends HasDatabaseConfigProvider[PgSlickProfile] {
