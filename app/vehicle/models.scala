@@ -4,8 +4,21 @@ import java.time.Instant
 import java.util.UUID
 
 import core.database.PgSlickProfile
+import core.storage.models.{File, ImageProperties}
+import graphql.types.CommonGraphQLScalarTypes
 import play.api.db.slick.HasDatabaseConfigProvider
+import play.api.libs.json.{Format, Json}
 import sangria.execution.deferred.HasId
+import sangria.macros.derive._
+import sangria.schema.ObjectType
+
+case class ImageFileRef(fileId: UUID, file: Option[File[ImageProperties]])
+
+object ImageFileRef extends CommonGraphQLScalarTypes {
+  implicit val listingImageRefFormats: Format[ImageFileRef] = Json.format[ImageFileRef]
+
+  implicit val fileImageRefGraphQLType: ObjectType[Unit, ImageFileRef] = deriveObjectType[Unit, ImageFileRef]()
+}
 
 case class Listing(
   id: UUID,
@@ -15,16 +28,17 @@ case class Listing(
   title: String,
   slug: String,
   description: String,
-  year: Option[Int],
-  kilometers: Option[Long],
-  color: Option[String],
-  bodyType: Option[BodyType.Value],
-  fuelType: Option[FuelType.Value],
-  transmissionType: Option[TransmissionType.Value],
-  cylinders: Option[Int],
-  engineSize: Option[Int],
-  conditionType: Option[ConditionType.Value],
-  features: List[String],
+  year: Option[Int] = None,
+  kilometers: Option[Long] = None,
+  color: Option[String] = None,
+  bodyType: Option[BodyType.Value] = None,
+  fuelType: Option[FuelType.Value] = None,
+  transmissionType: Option[TransmissionType.Value] = None,
+  cylinders: Option[Int] = None,
+  engineSize: Option[Int] = None,
+  conditionType: Option[ConditionType.Value] = None,
+  features: List[String] = Nil,
+  images: List[ImageFileRef] = Nil,
   createdBy: UUID,
   createdAt: Option[Instant]
 )

@@ -4,9 +4,9 @@ import java.time.Instant
 import java.util.UUID
 
 import com.google.inject.{Inject, Singleton}
-import core.MappedDBTypes
 import core.database.PgSlickProfile
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.api.libs.json._
 import vehicle._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,8 +29,16 @@ case class DBListing(
   engineSize: Option[Int],
   conditionType: Option[ConditionType.Value],
   features: List[String],
+  images: JsValue,
   createdBy: UUID,
   createdAt: Instant = Instant.now)
+
+case class DBImageFileRef(id: UUID)
+object DBImageFileRef {
+  implicit val DBImageFileRefFormats: OFormat[DBImageFileRef] = Json.format[DBImageFileRef]
+  implicit def toDB(i: ImageFileRef) = DBImageFileRef(id = i.fileId)
+  implicit def toDomain(i: DBImageFileRef) = ImageFileRef(fileId = i.id, file = None)
+}
 
 trait ListingTable extends HasDatabaseConfigProvider[PgSlickProfile] with VehicleEnumDBMappings {
   import profile.api._
@@ -53,11 +61,12 @@ trait ListingTable extends HasDatabaseConfigProvider[PgSlickProfile] with Vehicl
     def engineSize = column[Option[Int]]("engine_size")
     def conditionType = column[Option[ConditionType.Value]]("condition_type")
     def features = column[List[String]]("features")
+    def images = column[JsValue]("images")
     def createdBy = column[UUID]("created_by")
     def createdAt = column[Instant]("created_at")
 
-    def * = (id, makeId, modelId, businessId, title, slug, description, year, kilometers, color,
-      bodyType, fuelType, transmissionType, cylinders, engineSize, conditionType, features, createdBy, createdAt) <>
+    def * = (id, makeId, modelId, businessId, title, slug, description, year, kilometers, color, bodyType, fuelType,
+      transmissionType, cylinders, engineSize, conditionType, features, images, createdBy, createdAt) <>
       (DBListing.tupled, DBListing.unapply)
   }
 
@@ -73,6 +82,8 @@ class ListingDAO @Inject() (
   protected def listingsByBusinessQuery(businessId: UUID) = for {
     l <- listings if l.businessId === businessId
   } yield l
+
+  protected def listingByIdAction(id: UUID) = listings.filter(_.id === id)
 
   /**
     * Saves and returns the saved listing.
@@ -96,6 +107,7 @@ class ListingDAO @Inject() (
       engineSize = listing.engineSize,
       conditionType = listing.conditionType,
       features = listing.features,
+      images = Json.toJson(listing.images),
       createdBy = listing.createdBy
     )
 
@@ -140,9 +152,19 @@ class ListingDAO @Inject() (
       engineSize = l.engineSize,
       conditionType = l.conditionType,
       features = l.features,
+      images = l.images.validateOpt[List[ImageFileRef]].get.getOrElse(Nil),
       createdBy = l.createdBy,
       createdAt = Some(l.createdAt)
     ))
   }
+
+  def addFiles(listingId: UUID, imageRefs: Seq[ImageFileRef]): Future[Seq[ImageFileRef]] = db.run {
+    (for {
+      images <- listingByIdAction(listingId).map(_.images).forUpdate.result.head
+      _ <- listingByIdAction(listingId).map(_.images).update {
+        images.as[JsArray] ++ Json.toJson(imageRefs).as[JsArray]
+      }
+    } yield ()).transactionally
+  } map { _ => imageRefs }
 
 }

@@ -5,6 +5,11 @@ import java.util.UUID
 import com.google.inject.Inject
 import core.Sluggify
 import core.Sluggify.StringOps._
+import core.storage.daos.FileDAO
+import core.storage.models.{File, ImageProperties}
+import core.storage.providers.CloudinaryStorageProvider
+import graphql.middleware.FileUpload
+import user.User
 import vehicle._
 import vehicle.daos.{ListingDAO, ModelDAO}
 
@@ -12,8 +17,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ListingService @Inject() (
   listingDAO: ListingDAO,
-  modelDAO: ModelDAO
+  modelDAO: ModelDAO,
+  fileDAO: FileDAO,
+  cloudinaryStorageProvider: CloudinaryStorageProvider
 ) (implicit ec: ExecutionContext) {
+
   def createListing(
     id: Option[UUID],
     businessId: UUID,
@@ -43,7 +51,7 @@ class ListingService @Inject() (
       _id = id.getOrElse(UUID.randomUUID)
 
       listing = Listing(_id, model.make.get.id, model.id, businessId, title, slug, description, year, kilometers,
-        color, bodyType, fuelType, transmissionType, cylinders, engineSize, conditionType, features, userId, None)
+        color, bodyType, fuelType, transmissionType, cylinders, engineSize, conditionType, features, Nil, userId, None)
 
       // save the new listing
       createdListing <- listingDAO.save(listing)
@@ -64,5 +72,35 @@ class ListingService @Inject() (
     */
   def listingsByBusinessId(businessId: UUID): Future[Seq[Listing]] = listingDAO
     .getByBusiness(businessId)
+
+
+  def addImage(
+    id: Option[UUID],
+    listingId: UUID,
+    file: FileUpload,
+    user: User): Future[ImageFileRef] = {
+
+    val fileId = id.getOrElse(UUID.randomUUID())
+
+    for {
+      // store file in provider
+      storedFile <- cloudinaryStorageProvider.saveBusinessFile(file.file, businessId = user.businessId.get, fileId = fileId)
+
+      // save in files table
+      savedFile <- fileDAO.save[ImageProperties](File(
+        id = fileId,
+        mimeType = file.contentType,
+        provider = cloudinaryStorageProvider.Provider,
+        providerId = storedFile.id,
+        slug = None,
+        properties = Some(ImageProperties(file.filename, size = file.fileSize)),
+        businessId = user.businessId.get,
+        createdBy = user.id
+      ))
+
+      // add to listing if listing is defined
+      fileRef <- listingDAO.addFiles(listingId, Seq(ImageFileRef(fileId, None))).map(_.head)
+    } yield fileRef.copy(file = Some(savedFile))
+  }
 
 }

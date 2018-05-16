@@ -32,6 +32,7 @@ libraryDependencies ++= Seq(
   "com.mohiva" %% "play-silhouette-testkit" % "5.0.0" % "test"
 )
 
+libraryDependencies += "com.cloudinary" % "cloudinary-http44" % "1.18.0"
 libraryDependencies += "net.codingwell" %% "scala-guice" % "4.1.1"
 libraryDependencies += "com.iheart" %% "ficus" % "1.4.3"
 

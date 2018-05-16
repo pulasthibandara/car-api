@@ -37,4 +37,4 @@ trait CommonGraphQLScalarTypes {
   )
 }
 
-
+object CommonGraphQLScalarTypes extends CommonGraphQLScalarTypes

@@ -2,13 +2,16 @@ package graphql.schema
 
 import java.util.UUID
 
-import graphql.middleware.GraphQLAuthentication
+import graphql.middleware.{FileUpload, GraphQLAuthentication}
 import graphql.types.CommonGraphQLScalarTypes
+import graphql.utils.RelayUtils._
 import graphql.{RelayInterfaceTypes, SecureContext}
 import play.api.libs.json.{Json, Reads}
 import sangria.macros.derive._
 import sangria.relay._
 import sangria.marshalling.playJson._
+import sangria.marshalling.queryAst._
+import sangria.marshalling.{CoercedScalaResultMarshaller, FromInput, ResultMarshaller}
 import sangria.schema._
 import vehicle.{BodyType, ConditionType, FuelType, TransmissionType, _}
 
@@ -35,6 +38,8 @@ case class CreateListingPayload(
   listing: Listing,
   clientMutationId: Option[String]
 ) extends Mutation
+
+case class ListingImageUpload(id: Option[UUID], listingId: UUID, image: FileUpload)
 
 trait VehicleGraphQL extends VehicleGraphQLImplicits {
 
@@ -71,6 +76,21 @@ trait VehicleGraphQL extends VehicleGraphQLImplicits {
           listing.features
         ).map(CreateListingPayload(_, clientMutationId))
       }
+    ),
+    createSimpleMutation("uploadVehicleImage",
+      ImageFileRef.fileImageRefGraphQLType,
+      listingImageUploadType,
+      tags = GraphQLAuthentication.Authorized :: Nil,
+      resolve = (input: ListingImageUpload, c) => {
+        implicit val ec = c.ctx.ec
+
+        c.ctx.listingService.addImage(
+          input.id,
+          input.listingId,
+          input.image,
+          c.ctx.identity.get
+        )
+      }
     )
   )
 }
@@ -78,8 +98,12 @@ trait VehicleGraphQL extends VehicleGraphQLImplicits {
 trait VehicleGraphQLImplicits extends VehicleGraphQLTypes {
   implicit val createListingArgsReads: Reads[CreateListingArgs] = Json.reads[CreateListingArgs]
   implicit val createListingInputTypeReads: Reads[CreateListingInputType] = Json.reads[CreateListingInputType]
+  implicit val listingImageUploadReads: Reads[ListingImageUpload] = Json.reads[ListingImageUpload]
 
   implicit val CreateListingArgsInputType: InputObjectType[CreateListingArgs] = deriveInputObjectType[CreateListingArgs]()
+
+  implicit val listingImageUploadType: InputObjectType[ListingImageUpload] = deriveInputObjectType[ListingImageUpload]()
+
 }
 
 trait VehicleGraphQLTypes extends LowPriorityVehicleGraphQLImplicits with RelayInterfaceTypes with MetaFetchers {

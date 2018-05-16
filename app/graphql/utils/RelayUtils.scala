@@ -12,8 +12,8 @@ object RelayUtils {
   case class RelayInput[T](clientMutationId: Option[String], payload: T)
 
   object RelayInput {
-    implicit def jsonFormats[T](implicit ft: Format[T]): OFormat[RelayInput[T]] =
-      Json.format[RelayInput[T]]
+    implicit def jsonReads[T](implicit ft: Reads[T]): Reads[RelayInput[T]] =
+      Json.reads[RelayInput[T]]
   }
 
   implicit def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]]{
@@ -34,7 +34,7 @@ object RelayUtils {
     tags: List[FieldTag] = Nil,
     complexity: Option[(SecureContext, Args, Double) ⇒ Double] = None,
     deprecationReason: Option[String] = None)
-    (implicit  inf: Format[Input], ev: ValidOutType[Res, Out]): Field[SecureContext, Val] = {
+    (implicit  inf: Reads[Input], ev: ValidOutType[Res, Out]): Field[SecureContext, Val] = {
 
     Mutation.fieldWithClientMutationId[SecureContext, Val, RelayResult[Res], RelayInput[Input]](
       fieldName = name,
