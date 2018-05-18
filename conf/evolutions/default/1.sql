@@ -34,6 +34,15 @@ CREATE TABLE PASSWORD_INFO (
   CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+create table oauth2_info (
+  id SERIAL NOT NULL PRIMARY KEY,
+  access_token VARCHAR NOT NULL,
+  token_type VARCHAR,
+  expires_in INTEGER,
+  refresh_token VARCHAR,
+  login_info_id BIGINT NOT NULL
+);
+
 # --- !Downs
 
 DROP TABLE IF EXISTS PASSWORD_INFO;

@@ -16,7 +16,6 @@ import user.User.UserType
 trait AuthProviderData
 case class AuthProviderCredentials(firstName: String, lastName: String, email: String, password: String)
   extends AuthProviderData
-case class SignUpPayload(user: User, clientMutationId: Option[String]) extends Mutation
 
 case class LoginInput(email: String, password: String)
 

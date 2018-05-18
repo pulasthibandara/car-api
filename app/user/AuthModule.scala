@@ -1,14 +1,16 @@
 package user
 
+import com.google.inject.name.Named
 import com.google.inject.{AbstractModule, Provides}
-import com.mohiva.play.silhouette.api.crypto.{Crypter, CrypterAuthenticatorEncoder}
+import com.mohiva.play.silhouette.api.crypto.{Crypter, CrypterAuthenticatorEncoder, Signer}
 import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import com.mohiva.play.silhouette.api.services.AuthenticatorService
 import com.mohiva.play.silhouette.api.util._
 import com.mohiva.play.silhouette.api.{Environment, EventBus, Silhouette, SilhouetteProvider}
-import com.mohiva.play.silhouette.crypto.{JcaCrypter, JcaCrypterSettings}
+import com.mohiva.play.silhouette.crypto.{JcaCrypter, JcaCrypterSettings, JcaSigner, JcaSignerSettings}
 import com.mohiva.play.silhouette.impl.authenticators.{JWTAuthenticator, JWTAuthenticatorService, JWTAuthenticatorSettings}
-import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
+import com.mohiva.play.silhouette.impl.providers._
+import com.mohiva.play.silhouette.impl.providers.oauth2.GoogleProvider
 import com.mohiva.play.silhouette.impl.util.{DefaultFingerprintGenerator, PlayCacheLayer, SecureRandomIDGenerator}
 import com.mohiva.play.silhouette.password.BCryptSha256PasswordHasher
 import com.mohiva.play.silhouette.persistence.daos.DelegableAuthInfoDAO
@@ -102,9 +104,11 @@ class AuthModule extends AbstractModule with ScalaModule with AkkaGuiceSupport {
     * @return The auth info repository instance.
     */
   @Provides
-  def provideAuthInfoRepository(passwordInfoDAO: DelegableAuthInfoDAO[PasswordInfo])
-    (implicit ec: ExecutionContext): AuthInfoRepository =
-    new DelegableAuthInfoRepository(passwordInfoDAO)
+  def provideAuthInfoRepository(
+    passwordInfoDAO: DelegableAuthInfoDAO[PasswordInfo],
+    auth2InfoDAO: OAuth2InfoDAO
+  ) (implicit ec: ExecutionContext): AuthInfoRepository =
+    new DelegableAuthInfoRepository(passwordInfoDAO, auth2InfoDAO)
 
   /**
     * Provides the authenticator service.
@@ -153,6 +157,61 @@ class AuthModule extends AbstractModule with ScalaModule with AkkaGuiceSupport {
     passwordHasherRegistry: PasswordHasherRegistry)(implicit ec: ExecutionContext): CredentialsProvider = {
 
     new CredentialsProvider(authInfoRepository, passwordHasherRegistry)
+  }
+
+  /**
+    * Provides the social provider registry.
+
+    * @return The Silhouette environment.
+    */
+  @Provides
+  def provideSocialProviderRegistry(
+    googleProvider: GoogleProvider): SocialProviderRegistry = {
+
+    SocialProviderRegistry(Seq(
+      googleProvider
+    ))
+  }
+
+  /**
+    * Provides the Google provider.
+    *
+    * @return The Google provider.
+    */
+  @Provides
+  def provideGoogleProvider(
+    httpLayer: HTTPLayer,
+    socialStateHandler: SocialStateHandler,
+    configuration: Configuration): GoogleProvider = {
+
+    new GoogleProvider(httpLayer, socialStateHandler, configuration.underlying.as[OAuth2Settings]("silhouette.google"))
+  }
+
+  /**
+    * Provides the social state handler.
+    *
+    * @param signer The signer implementation.
+    * @return The social state handler implementation.
+    */
+  @Provides
+  def provideSocialStateHandler(
+    @Named("social-state-signer") signer: Signer
+  ): SocialStateHandler = {
+
+    new DefaultSocialStateHandler(Set(), signer)
+  }
+
+  /**
+    * Provides the signer for the social state handler.
+    *
+    * @param configuration The Play configuration.
+    * @return The signer for the social state handler.
+    */
+  @Provides @Named("social-state-signer")
+  def provideSocialStateSigner(configuration: Configuration): Signer = {
+    val config = configuration.underlying.as[JcaSignerSettings]("silhouette.socialStateHandler.signer")
+
+    new JcaSigner(config)
   }
 
 }

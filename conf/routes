@@ -4,15 +4,17 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET     /                           controllers.HomeController.index
+GET         /                    controllers.HomeController.index
 
-POST    /graphql                    controllers.HomeController.graphQL
-GET    /graphql                    controllers.HomeController.graphiql
+GET         /authenticate/:provider           controllers.AuthController.externalAuth(provider)
+
+POST        /graphql             controllers.HomeController.graphQL
+GET         /graphql             controllers.HomeController.graphiql
 
 # An example controller showing how to use dependency injection
-GET     /count                      controllers.CountController.count
+GET         /count               controllers.CountController.count
 # An example controller showing how to write asynchronous code
-GET     /message                    controllers.AsyncController.message
+GET         /message             controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)

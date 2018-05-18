@@ -1,13 +1,14 @@
 package user
 
 import java.util.UUID
-import javax.inject.{Inject, Singleton}
 
+import javax.inject.{Inject, Singleton}
 import akka.actor.ActorSystem
-import com.mohiva.play.silhouette.api.{LoginInfo, Silhouette}
+import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
+import com.mohiva.play.silhouette.api.{AuthInfo, LoginInfo, Silhouette}
 import com.mohiva.play.silhouette.api.util.{Credentials, PasswordHasherRegistry}
 import com.mohiva.play.silhouette.impl.exceptions.IdentityNotFoundException
-import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
+import com.mohiva.play.silhouette.impl.providers.{CommonSocialProfile, CredentialsProvider}
 import core.UUIDImplitits
 import user.models.UserCreated
 
@@ -16,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AuthService @Inject()(
   userDAO: UserDAO,
-  passwordInfoDAO: PasswordInfoDAO,
+  authInfoRepository: AuthInfoRepository,
   passwordHasherRegistry: PasswordHasherRegistry,
   credentialsProvider: CredentialsProvider,
   userService: UserService,
@@ -53,7 +54,7 @@ class AuthService @Inject()(
 
     for {
       user <- userDAO.save(user)
-      _ <- passwordInfoDAO.add(user.loginInfo.get, authInfo)
+      _ <- authInfoRepository.add(user.loginInfo.get, authInfo)
     } yield user
   }
 
@@ -72,6 +73,25 @@ class AuthService @Inject()(
       }
     } yield token
   }
+
+  /**
+    * Creates a user from a social profile.
+    */
+  def createUser[T <: AuthInfo](profile: CommonSocialProfile, authInfo: T): Future[User] = for {
+    user <- userDAO.find(profile.loginInfo) flatMap {
+      // User already exists, just return the existing record
+      case Some(user) => Future.successful(user)
+      case None => userDAO.save(User(
+        id = UUID.randomUUID(),
+        firstName = profile.firstName.getOrElse(profile.email.get),
+        lastName = profile.lastName.getOrElse(""),
+        email = profile.email.get,
+        businessId = None,
+        loginInfo = Some(profile.loginInfo)
+      ))
+    }
+    _ <- authInfoRepository.add(user.loginInfo.get, authInfo)
+  } yield user
 }
 
 class UserAlreadyExists(email: String)
