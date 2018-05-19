@@ -1,3 +1,4 @@
+# use docker-compose.override.yml file to override local configuration.
 version: "3"
 
 services:
@@ -12,6 +13,11 @@ services:
       DB_URL: jdbc:postgresql://db/postgres
       DB_USER: postgres
       DB_PASSWORD: mysecretpassword
+      GOOGLE_CLIENT_SECRET: google-secret
+      GOOGLE_CLIENT_ID: clientid.apps.googleusercontent.com
+      CLOUDINARY_API_KEY: cloudinary-key
+      CLOUDINARY_CLOUD_NAME: cloudinary-cloud
+      CLOUDINARY_API_SECRET: cloudinary-secret
     stdin_open: true
 
   db:
