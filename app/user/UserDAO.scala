@@ -61,8 +61,10 @@ class UserDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)
 
     val createAction = for {
       _ <- users += dbUser
-      loginInfoId <- loginInfos += dbLoginInfo
-      _ <- userLoginInfos += DBUserLoginInfo(dbUser.id, loginInfoId)
+      loginInfo <- (loginInfos returning loginInfos.map(_.id)
+          into ((dbLoginInfo, id) => dbLoginInfo.copy(id = Some(id)))
+        ) += dbLoginInfo
+      _ <- userLoginInfos += DBUserLoginInfo(dbUser.id, loginInfo.id.get)
     } yield user
 
     db.run { createAction } map { _ => user }
