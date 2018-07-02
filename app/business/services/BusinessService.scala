@@ -6,6 +6,7 @@ import akka.actor.ActorSystem
 import business.daos.BusinessDAO
 import business.models.{Business, BusinessCreated}
 import com.google.inject.{Inject, Singleton}
+import graphql.middleware.FileUpload
 import user.User
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,7 +29,7 @@ class BusinessService @Inject() (
   /**
     * Create business for the given user.
     */
-  def createBusiness(name: String, domain: Option[String], subdomain: Option[String], user: User): Future[Business] = {
+  def createBusiness(name: String, domain: Option[String], subdomain: Option[String], user: User, logo: Option[FileUpload]): Future[Business] = {
     user.businessId match {
       case None =>
         val business = Business(

@@ -3,7 +3,7 @@ package graphql.schema
 import java.util.UUID
 
 import business.models.Business
-import graphql.middleware.GraphQLAuthentication
+import graphql.middleware.{FileUpload, GraphQLAuthentication}
 import graphql.{GraphQLSchema, RelayInterfaceTypes, SecureContext}
 import play.api.libs.json.Json
 import sangria.macros.derive._
@@ -28,7 +28,7 @@ trait BusinessGraphQL extends RelayInterfaceTypes
       mutateAndGetPayload = {
         case (CreateBusinessInputType(b, clientMutationId), c) =>
           import c.ctx.ec
-          c.ctx.businessService.createBusiness(b.name, b.domain, b.subdomain, c.ctx.identity.get)
+          c.ctx.businessService.createBusiness(b.name, b.domain, b.subdomain, c.ctx.identity.get, b.logo)
             .map(CreateBusinessPayload(_, clientMutationId))
       }
     )
@@ -74,6 +74,6 @@ trait BusinessGraphQLTypes extends VehicleGraphQLTypes {
   implicit val createBusinessArgType = deriveInputObjectType[CreateBusinessArgType]()
 }
 
-case class CreateBusinessArgType(name: String, domain: Option[String], subdomain: Option[String])
+case class CreateBusinessArgType(name: String, domain: Option[String], subdomain: Option[String], logo: Option[FileUpload])
 case class CreateBusinessInputType(business: CreateBusinessArgType, clientMutationId: Option[String])
 case class CreateBusinessPayload(business: Business, clientMutationId: Option[String]) extends Mutation
