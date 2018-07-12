@@ -33,17 +33,17 @@ class AuthService @Inject()(
     val loginInfo = LoginInfo(CredentialsProvider.ID, email)
     val user = User(userId, firstName, lastName, email, None, Some(loginInfo))
 
-    val maybeCreatedUser = userDAO.find(email).flatMap {
+    val futUser = userDAO.find(email).flatMap {
       case Some(_) => throw new UserAlreadyExists(user.email)
       case None => createUser(user, password)
     }
 
-    maybeCreatedUser.foreach { case u => actorSystem
+    futUser.foreach { case u => actorSystem
       .eventStream
       .publish(UserCreated(u))
     }
 
-    maybeCreatedUser
+    futUser
   }
 
   /**
@@ -67,12 +67,19 @@ class AuthService @Inject()(
       loginInfo <- credentialsProvider.authenticate(credentials)
       user <- userService.retrieve(loginInfo)
       token <- user match {
-        case Some(_) => silhouette.env.authenticatorService.create(loginInfo)(null)
-          .flatMap(silhouette.env.authenticatorService.init(_)(null))
+        case Some(_) => createToken(loginInfo)
         case None => throw new IdentityNotFoundException("User not found.")
       }
     } yield token
   }
+
+  /**
+    * Creates an authentication toekn.
+    */
+  def createToken(loginInfo: LoginInfo): Future[String] = for {
+    authenticator <- silhouette.env.authenticatorService.create(loginInfo)(null)
+    token <- silhouette.env.authenticatorService.init(authenticator)(null)
+  } yield token
 
   /**
     * Creates a user from a social profile.

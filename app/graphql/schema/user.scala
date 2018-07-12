@@ -19,17 +19,25 @@ case class AuthProviderCredentials(firstName: String, lastName: String, email: S
 
 case class LoginInput(email: String, password: String)
 
+case class SignUpRes(token: String, user: User)
+
 trait AuthGraphQL extends AuthGraphQLImplicits  { this: GraphQLSchema =>
 
   def mutations: List[Field[SecureContext, Unit]] = List(
     createSimpleMutation(
       "signUp",
-      UserType,
+      signUpResType,
       OptionInputType(AuthProviderCredentialsInputType),
-      resolve = (input: Option[AuthProviderCredentials], c) => input match {
-        case Some (AuthProviderCredentials (firstName, lastName, email, password)) =>
-          c.ctx.authService.signUp (firstName, lastName, email, password)
-        case _ => throw new Exception ("Provider not configured.")
+      resolve = (input: Option[AuthProviderCredentials], c) => {
+        implicit val ec = c.ctx.ec
+
+        input match {
+          case Some (AuthProviderCredentials (firstName, lastName, email, password)) => for {
+            user <- c.ctx.authService.signUp (firstName, lastName, email, password)
+            token <- c.ctx.authService.createToken(user.loginInfo.get)
+          } yield SignUpRes(token, user)
+          case _ => throw new Exception ("Provider not configured.")
+        }
       }
     ),
     createSimpleMutation(
@@ -44,11 +52,13 @@ trait AuthGraphQL extends AuthGraphQLImplicits  { this: GraphQLSchema =>
 trait AuthGraphQLImplicits {
   implicit val authProviderCredentialsFormats: OFormat[AuthProviderCredentials] = Json.format[AuthProviderCredentials]
   implicit val loginInputFormats: OFormat[LoginInput] = Json.format[LoginInput]
+  implicit val signUpResFormats: OFormat[SignUpRes] = Json.format[SignUpRes]
 
   implicit  val AuthProviderCredentialsInputType: InputObjectType[AuthProviderCredentials] =
     deriveInputObjectType[AuthProviderCredentials]()
   implicit val loginInputType: InputObjectType[LoginInput] =
     deriveInputObjectType[LoginInput]()
+  implicit val signUpResType: OutputType[SignUpRes] = deriveObjectType[SecureContext, SignUpRes]()
 }
 
 trait AuthGraphQLTypes {
